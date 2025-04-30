@@ -1,16 +1,161 @@
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap');
+
 * {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  font-family: 'Poppins', sans-serif;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Poppins', sans-serif;
 }
+
 body {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 100vh;
-  background: url('/public/fondo.png') no-repeat;
-  background-size: cover;
-  background-position: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background: url('/public/fondo.png') no-repeat; /* Ajusta la ruta de la imagen */
+    background-size: cover;
+    background-position: center;
+}
+
+.wrapper {
+    position: relative;
+    width: 400px;
+    background: transparent;
+    border: 2px solid rgba(255, 255, 255, .5);
+    border-radius: 20px;
+    backdrop-filter: blur(20px);
+    box-shadow: 0 0 30px rgba(0, 0, 0, .5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    height: 450px; /* Ajusta la altura según sea necesario */
+}
+
+.form-box {
+    width: 100%;
+    padding: 40px;
+}
+
+.form-box.login {
+    transition: transform .18s ease;
+    transform: translateX(0);
+}
+
+.form-box.register {
+    position: absolute;
+    transition: transform .18s ease;
+    transform: translateX(400px); /* Inicialmente fuera de la vista */
+}
+
+.wrapper.active .form-box.login {
+    transition: none;
+    transform: translateX(-400px); /* Desplaza el formulario de login */
+}
+
+.wrapper.active .form-box.register {
+    transition: transform .18s ease;
+    transform: translateX(0); /* Muestra el formulario de registro */
+}
+
+h2 {
+    font-size: 2em;
+    color: #fff;
+    text-align: center;
+}
+
+.input-box {
+    position: relative;
+    width: 100%;
+    height: 50px;
+    border-bottom: 2px solid #fff;
+    margin: 30px 0;
+}
+
+.input-box label {
+    position: absolute;
+    top: 50%;
+    left: 5px;
+    transform: translateY(-50%);
+    font-size: 1em;
+    color: #fff;
+    font-weight: 500;
+    pointer-events: none;
+    transition: .5s;
+}
+
+.input-box input {
+    width: 100%;
+    height: 100%;
+    background: transparent;
+    border: none;
+    outline: none;
+    font-size: 1em;
+    color: #fff;
+    font-weight: 600;
+    padding: 0 35px 0 5px;
+}
+
+.input-box .icon {
+    position: absolute;
+    right: 8px;
+    font-size: 1.2em;
+    color: #fff;
+    line-height: 57px;
+}
+
+.link {
+    font-size: .9em;
+    color: #fff;
+    text-align: center;
+    margin: 25px 0 10px;
+}
+
+.link p a {
+    color: #fff;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.link p a:hover {
+    text-decoration: underline;
+}
+
+button {
+    width: 100%;
+    height: 45px;
+    background: #fff;
+    border: none;
+    outline: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 1em;
+    color: #000;
+    font-weight: 500;
+    margin-bottom: 10px;
+}
+
+button:hover {
+    background: #000;
+    color: #fff;
+}
+
+.auth-options {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+.google-btn {
+    background: #DB4437; /* Color de Google */
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.google-icon {
+    width: 20px;
+    height: 20px;
+    margin-right: 10px;
 }
