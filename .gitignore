@@ -5,12 +5,6 @@
 
 # Node.js modules
 /node_modules
-/.pnp
-.pnp.js
-
-# Archivos del sistema fuera de la carpeta Wordy
-/*/
-!Wordy/
 
 # Archivos temporales de VS Code
 .vscode/*
