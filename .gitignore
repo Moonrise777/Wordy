@@ -4,7 +4,9 @@
 ## Get latest from https://github.com/github/gitignore/blob/main/VisualStudio.gitignore
 
 # Node.js modules
-node_modules/
+/node_modules
+/.pnp
+.pnp.js
 
 # Archivos del sistema fuera de la carpeta Wordy
 /*/
