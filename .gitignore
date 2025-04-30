@@ -3,6 +3,21 @@
 ##
 ## Get latest from https://github.com/github/gitignore/blob/main/VisualStudio.gitignore
 
+# Node.js modules
+node_modules/
+
+# Archivos del sistema fuera de la carpeta Wordy
+/*/
+!Wordy/
+
+# Archivos temporales de VS Code
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+
 # User-specific files
 *.rsuser
 *.suo
