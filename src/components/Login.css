@@ -29,34 +29,15 @@ body {
     justify-content: center;
     align-items: center;
     overflow: hidden;
-    height: 450px; /* Ajusta la altura según sea necesario */
+    height: fit-content; 
 }
-
 .form-box {
-    width: 100%;
-    padding: 40px;
+  width: 100%;
+  padding: 40px;
+  
 }
 
-.form-box.login {
-    transition: transform .18s ease;
-    transform: translateX(0);
-}
 
-.form-box.register {
-    position: absolute;
-    transition: transform .18s ease;
-    transform: translateX(400px); /* Inicialmente fuera de la vista */
-}
-
-.wrapper.active .form-box.login {
-    transition: none;
-    transform: translateX(-400px); /* Desplaza el formulario de login */
-}
-
-.wrapper.active .form-box.register {
-    transition: transform .18s ease;
-    transform: translateX(0); /* Muestra el formulario de registro */
-}
 
 h2 {
     font-size: 2em;
@@ -147,7 +128,7 @@ button:hover {
 }
 
 .google-btn {
-    background: #DB4437; /* Color de Google */
+    background: #825dfa57; /* Color de Google */
     color: #fff;
     display: flex;
     align-items: center;

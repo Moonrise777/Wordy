@@ -1,7 +1,7 @@
 // src/components/Auth.js
 import React, { useState } from "react";
 import { signInWithGoogle, signInWithEmail, registerWithEmail, logout } from "../authService";
-import "./Login.css"; // Importa el archivo CSS
+import "./Login.css";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEnvelope, faLock } from '@fortawesome/free-solid-svg-icons';
 
@@ -9,13 +9,15 @@ const Auth = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLogin, setIsLogin] = useState(true);
+  const [isWrapperActive, setIsWrapperActive] = useState(false); // Nuevo estado para la clase 'active' del wrapper
 
   const toggleForm = () => {
     setIsLogin(!isLogin);
+    setIsWrapperActive(!isWrapperActive); // Cambia el estado del wrapper
   };
 
   return (
-    <div className="wrapper">
+    <div className={`wrapper ${isWrapperActive ? 'active' : ''}`}> {/* Aplica la clase 'active' condicionalmente */}
       {isLogin ? (
         <div className="form-box login">
           <h2>Iniciar Sesión</h2>
@@ -29,7 +31,7 @@ const Auth = () => {
                 placeholder="Correo electrónico"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                required // Añade la validación 'required'
+                required
               />
             </div>
             <div className="input-box">
@@ -41,7 +43,7 @@ const Auth = () => {
                 placeholder="Contraseña"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                required // Añade la validación 'required'
+                required
               />
             </div>
             <button type="button" onClick={() => signInWithEmail(email, password)}>
@@ -49,7 +51,7 @@ const Auth = () => {
             </button>
             <div className="auth-options">
               <button type="button" className="google-btn" onClick={signInWithGoogle}>
-                <img src="/google-logo.png" alt="Google" className="google-icon" />
+                <img src="/google-logo.webp" alt="Google" className="google-icon" />
                 Iniciar sesión con Google
               </button>
             </div>
@@ -71,7 +73,7 @@ const Auth = () => {
                 placeholder="Correo electrónico"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                required // Añade la validación 'required'
+                required
               />
             </div>
             <div className="input-box">
@@ -83,12 +85,18 @@ const Auth = () => {
                 placeholder="Contraseña"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                required // Añade la validación 'required'
+                required
               />
             </div>
             <button type="button" onClick={() => registerWithEmail(email, password)}>
               Registrarse
             </button>
+            <div className="auth-options">
+              <button type="button" className="google-btn" onClick={signInWithGoogle}>
+                <img src="/google-logo.webp" alt="Google" className="google-icon" />
+                Registrarse con Google
+              </button>
+            </div>
             <div className="link">
               ¿Ya tienes una cuenta? <a href="#" onClick={toggleForm}>Inicia sesión</a>
             </div>
