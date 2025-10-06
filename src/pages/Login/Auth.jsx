@@ -138,7 +138,7 @@ const Auth = ({ onLoginSuccess, language }) => {
         <div className="social-login">
           <a href="#" onClick={handleGoogle}>
             <img
-              src="/google-logo.webp"
+              src="../../assets/google_logo.webp"
               alt="Google"
               style={{ width: 20, height: 20, marginRight: 8, verticalAlign: 'middle' }}
             />
