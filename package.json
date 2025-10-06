@@ -3,15 +3,12 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
-  "homepage": "https://Moonrise777.github.io/Wordy",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "lint:fix": "eslint . --fix",
-    "predeploy": "npm run build",
-    "deploy": "gh-pages -d dist"
+    "lint:fix": "eslint . --fix"
   },
   "dependencies": {
     "@fortawesome/free-solid-svg-icons": "^7.1.0",
@@ -31,7 +28,6 @@
     "eslint": "^9.36.0",
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.22",
-    "gh-pages": "^6.3.0",
     "globals": "^16.4.0",
     "postcss": "^8.5.6",
     "sass-embedded": "^1.93.2",
