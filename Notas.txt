@@ -1,0 +1,9 @@
+- Empezar diseñando el juego ✓
+- Hacer la pagina de perfil, configurar en el navbar la foto de perfil. ✓
+- Investigar como cambiar de idioma facilmente.
+- Poner autenticacion de usuario, mandar correo. 
+- Integrar la recuperacion de contraseña. 
+    
+- Pasar de React a vite y tailwind por que se ve blanca la pagina ✓
+- Cambiar el fondo usado de rosa a oscuro
+- Guardar en la firestore database el profile picture y username ✓

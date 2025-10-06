@@ -1,0 +1,34 @@
+/* NotFound.css */
+
+.main-container {
+ display: flex; /* Contenedor principal: gato a la izquierda, contenedor derecho a la derecha */
+ justify-content: center; /* Centra horizontalmente el grupo */
+ align-items: center; /* Centra verticalmente el grupo */
+ min-height: 80vh; /* Ocupa gran parte de la altura */
+ gap: 20px; /* Espacio entre el gato y el contenedor derecho */
+}
+
+.main-container img.neko { /* Estilos específicos para el gato */
+ max-width: 300px; /* Ajusta el tamaño del gato */
+ height: auto;
+}
+
+.right-container {
+ display: flex; /* Contenedor para dango y malteada */
+ flex-direction: column; /* Apila los elementos verticalmente */
+ align-items: center; /* Centra horizontalmente dentro del contenedor derecho */
+ gap: 10px; /* Espacio entre el dango y la malteada */
+}
+
+.right-container img { /* Estilos para el dango y la malteada */
+ max-width: 150px;
+ height: auto;
+}
+
+.not-found-heading {
+ text-align: center;
+ margin-top: 20px;
+ margin-bottom: 20px;
+ font-size: 2rem; /* Tamaño del texto del título */
+ color: --var(--text-primary); 
+}

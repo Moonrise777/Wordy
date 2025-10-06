@@ -1,0 +1,67 @@
+.wordle-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 80vh;
+}
+
+.board {
+  display: flex;
+  flex-direction: column;
+  /* CAMBIO: Gap ligeramente reducido */
+  gap: clamp(0.4rem, 1vw, 0.5rem);
+}
+
+.guess-row {
+  display: flex;
+  justify-content: center;
+  /* CAMBIO: Gap ligeramente reducido */
+  gap: clamp(0.4rem, 1vw, 0.5rem);
+}
+
+.guess-cell {
+  /* ===== VALORES MÁXIMOS REDUCIDOS DE NUEVO ===== */
+  /* El tamaño máximo ahora es 4.0rem (64px) */
+  width: clamp(3rem, 6vw, 4.0rem);
+  height: clamp(3rem, 6vw, 4.0rem);
+  
+  border: 2px solid rgba(0, 0, 0, 0.2);
+  border-radius: 8px;
+  text-align: center;
+
+  /* La altura de línea y fuente también se ajustan para mantener la proporción */
+  line-height: clamp(3rem, 6vw, 4.0rem);
+  font-size: clamp(1.5rem, 3vw, 2.0rem);
+
+  font-weight: 600;
+  text-transform: uppercase;
+  transition: all 0.2s ease;
+}
+
+.guess-cell.active {
+  background-color: #fff;
+  border-color: #ff6f91;
+}
+
+.guess-cell.inactive {
+  background-color: rgba(255, 255, 255, 0.5);
+  border: 2px dashed rgb(166, 166, 166);
+  color: rgba(0, 0, 0, 0.4);
+}
+
+.submit-btn {
+  margin-top: 1rem;
+  padding: 0.6rem 1.2rem;
+  border: none;
+  background-color: #ff6f91;
+  color: white;
+  font-weight: 600;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.submit-btn:hover {
+  background-color: #ff4f7b;
+}

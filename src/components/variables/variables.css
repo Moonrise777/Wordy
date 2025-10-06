@@ -1,0 +1,13 @@
+:root {
+  font-size: 18px;
+
+  --text-primary: #1e4b7f9b; /* Marrón más oscuro para texto principal */
+  --text-secondary: #f8f4dd; /* Color más claro para texto en fondos oscuros */
+  --bg-primary: #e19999;
+  --bg-secondary:  #4B3A3A;
+  
+
+  --transition-speed: 600ms;
+  --color-one: #f8f4dd; /* Color principal para gradientes y botones */
+  --color-two: #E8F0FE; 
+}

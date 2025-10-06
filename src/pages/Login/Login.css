@@ -1,0 +1,150 @@
+@import '../../components/variables/variables.css';
+
+/* Centrado del contenedor principal: */
+main {
+  display: flex;
+  min-height: calc(100vh - 60px); /* Ajusta según la altura de tu header/footer */
+  align-items: center;
+  justify-content: center;
+  padding: 20px 0;
+}
+
+.login-box {
+  position: relative;
+  width: 500px;
+  max-width: 90%;
+  background-color: #ffffff76;
+  padding: 15px 10px;
+  border-radius: 20px;
+  box-shadow: 0 2px 3px 0 rgba(0,0,0,0.33);
+}
+
+.lb-header {
+  color: #00415d;
+  margin: 0 5px 8px 5px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #eee;
+  text-align: center;
+  height: 28px;
+}
+
+.lb-header a {
+  margin: 0 25px;
+  padding: 0 20px;
+  text-decoration: none;
+  color: #272727;
+  font-weight: bold;
+  font-size: 15px;
+  transition: all 0.1s linear;
+  cursor: pointer;
+}
+.lb-header .active{
+  color: var(--bg-secondary);
+  font-size: 18px;
+}
+
+.social-login {
+  width: 100%;
+  padding: 8px 0 10px 0;
+  display: flex;
+  justify-content: center;
+}
+.social-login a {
+  /* ----------- BOTÓN DE GOOGLE MODERNIZADO ---------- */
+  background-color: #FFFFFF;
+  color: #4f4f4f;
+  border: none;
+  padding: 12px 32px;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+  text-decoration: none;
+  text-align: center;
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  transform: scale(1);
+}
+.social-login a:hover {
+  background-color: #f8f9fa;
+  transform: scale(1.05);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+.social-login a img {
+  width: 20px;
+  height: 20px;
+  margin-right: 8px;
+  vertical-align: middle;
+}
+/* ---------------------------------------------------------------- */
+
+.email-login, .email-signup {
+  width: 100%;
+  margin-top: 12px;
+  text-align: center;
+}
+
+.u-form-group {
+  width: 100%;
+  margin-bottom: 10px;
+}
+
+.u-form-group input[type="email"],
+.u-form-group input[type="password"]{
+  width: calc(50% - 22px);
+  height: 45px;
+  outline: none;
+  border: 1px solid #ddd;
+  padding: 0 10px;
+  border-radius: 12px;
+  color: #333;
+  font-size: 0.95rem;
+  transition: all 0.3s ease;
+}
+.u-form-group input:focus{
+  border-color: #f9a8d4;
+  box-shadow: 0 0 0 3px rgba(249, 168, 212, 0.1);
+}
+.u-form-group button{
+  /* ----------- BOTÓN SIGN IN MODERNIZADO ---------- */
+  width: 50%;
+  background-color: #f9a8d4;
+  border: none;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 600;
+  padding: 12px 32px;
+  border-radius: 12px;
+  text-transform: uppercase;
+  cursor: pointer;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  transform: scale(1);
+}
+.u-form-group button:hover{
+  background-color: #f472b6;
+  transform: scale(1.05);
+  box-shadow: 0 6px 12px rgba(244, 114, 182, 0.3);
+}
+.forgot-password{
+  width: 50%;
+  text-align: left;
+  text-decoration: underline;
+  color: #383838;
+  font-size: 0.75rem;
+  transition: color 0.2s ease;
+}
+.forgot-password:hover{
+  color: #f472b6;
+}
+
+.error-msg {
+  color: crimson;
+  margin-top: 10px;
+  font-size: 0.95rem;
+  font-weight: bold;
+  text-align: center;
+}
