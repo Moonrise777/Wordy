@@ -11,10 +11,10 @@ import { saveProfile } from '../../web_vitals/authService';
 import IconWordy from '../../assets/Icon_Wordy.png';
 
 // Importa las imágenes directamente desde src
-import Dog from '../../ProfilePics/Dog.png';
-import Hiyoko from '../../ProfilePics/Hiyoko.png';
-import Neko from '../../ProfilePics/Neko.png';
-import Penguin from '../../ProfilePics/Penguin.png';
+import Dog from '%PUBLIC_URL%/ProfilePics/dog.png';
+import Hiyoko from '../../ProfilePics/hiyoko.png';
+import Neko from '../../ProfilePics/neko.png';
+import Penguin from '../../ProfilePics/penguin.png';
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
