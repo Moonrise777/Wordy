@@ -2,10 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { auth, db } from '../../web_vitals/firebaseConfig';
 import { getDoc, doc } from 'firebase/firestore';
 import { saveProfile } from '../../web_vitals/authService';
-import Dog from '../../ProfilePics/Dog.png';
-import Hiyoko from '../../ProfilePics/Hiyoko.png';
-import Neko from '../../ProfilePics/Neko.png';
-import Penguin from '../../ProfilePics/Penguin.png';
+import Dog from '@profilepics/Dog.png';
+import Hiyoko from '@profilepics/Hiyoko.png';
+import Neko from '@profilepics/Neko.png';
+import Penguin from '@profilepics/Penguin.png';
 import Swal from 'sweetalert2';
 
 const Profile = ({ language }) => {
