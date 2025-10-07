@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import Swal from 'sweetalert2';
 import { signInWithGoogle, signInWithEmail, onAuthStateChanged, registerWithEmail } from "../../web_vitals/authService";
 import "../../pages/Login/Login.css";
-import googleLogo from '@assets/google_logo.webp';
+import googleLogo from '@assets/google-logo.webp';
 
 const Auth = ({ onLoginSuccess, language }) => {
   const [email, setEmail] = useState("");
