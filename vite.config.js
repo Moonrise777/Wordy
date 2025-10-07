@@ -17,6 +17,7 @@ export default defineConfig({
     alias: {
       // 3. path.resolve
       '@profilepics': path.resolve(__dirname, './src/assets/ProfilePics'),
+       '@assets': path.resolve(__dirname, './src/assets'),
     },
   },
 });

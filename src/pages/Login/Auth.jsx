@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import Swal from 'sweetalert2';
 import { signInWithGoogle, signInWithEmail, onAuthStateChanged, registerWithEmail } from "../../web_vitals/authService";
 import "../../pages/Login/Login.css";
+import googleLogo from '@assets/google_logo.webp';
 
 const Auth = ({ onLoginSuccess, language }) => {
   const [email, setEmail] = useState("");
@@ -138,7 +139,7 @@ const Auth = ({ onLoginSuccess, language }) => {
         <div className="social-login">
           <a href="#" onClick={handleGoogle}>
             <img
-              src="../../assets/google_logo.webp"
+              src={googleLogo}
               alt="Google"
               style={{ width: 20, height: 20, marginRight: 8, verticalAlign: 'middle' }}
             />
