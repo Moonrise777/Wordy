@@ -5,7 +5,7 @@ import Swal from 'sweetalert2';
 import { logout } from '../../web_vitals/authService';
 import { onUserDataChanged } from '../../web_vitals/authService'; 
 import styles from './Navbar.module.scss';
-import { saveProfile } from '../../web_vitals/authService';
+
 
 
 import IconWordy from '../../assets/Icon_Wordy.png';
@@ -26,56 +26,39 @@ import {
 // Mapeo de nombres a imágenes
 const profilePics = { Dog, Hiyoko, Neko, Penguin };
 
-const Navbar = ({ isLoggedIn, user, language, setLanguage }) => {
+const Navbar = ({ isLoggedIn, user, language, setLanguage, isDark, toggleTheme }) => {
   const [menuOpen, setMenuOpen] = useState(false);
   const [authMenuOpen, setAuthMenuOpen] = useState(false);
   const [languageMenuOpen, setLanguageMenuOpen] = useState(false);
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
-  const [isDark, setIsDark] = useState(false);
   const [profilePic, setProfilePic] = useState(Neko);
   const [username, setUsername] = useState('User');
   const navigate = useNavigate();
 
-  // Carga de datos del usuario
+    // Carga de datos del usuario
   useEffect(() => {
-    if (!user?.uid) return;
+    if (!user?.uid) {
+      // Resetea el nombre de usuario y la foto si no hay usuario
+      setUsername('User');
+      setProfilePic(Neko);
+      return;
+    };
 
     const unsubscribe = onUserDataChanged(user.uid, (data) => {
       if (!data) return;
-
       const storedPic = data.profilePic?.trim();
-      const normalized = storedPic
-        ? storedPic.charAt(0).toUpperCase() + storedPic.slice(1).toLowerCase()
-        : '';
-
+      const normalized = storedPic ? storedPic.charAt(0).toUpperCase() + storedPic.slice(1).toLowerCase() : '';
       if (normalized && profilePics[normalized]) {
         setProfilePic(profilePics[normalized]);
       } else {
         setProfilePic(Neko);
       }
-
       if (data.username) setUsername(data.username);
     });
-
     return () => unsubscribe();
   }, [user]);
 
-  // Cambiar fondo día/noche
-  const toggleTheme = async () => {
-    const newDark = !isDark;
-    setIsDark(newDark);
-
-    if (user) { // Solo guardar si hay un usuario logueado
-      const themeToSave = newDark ? 'dark' : 'light';
-      try {
-        await saveProfile(user.uid, { theme: themeToSave });
-        console.log(`Tema '${themeToSave}' guardado en Firestore.`);
-      } catch (error) {
-        console.error("Error al guardar el tema:", error);
-      }
-    }
-  };
-
+  
   // Cerrar sesión
   const handleLogout = async () => {
     Swal.fire({
@@ -130,6 +113,8 @@ const Navbar = ({ isLoggedIn, user, language, setLanguage }) => {
       timerProgressBar: true,
     });
   };
+
+
 
   return (
     <nav className={styles.navbar}>
