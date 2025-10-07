@@ -1,6 +1,7 @@
 {
   "name": "wordy",
   "private": true,
+  "homepage": "https://moonrise777.github.io/Wordy",
   "version": "0.0.0",
   "type": "module",
   "scripts": {
