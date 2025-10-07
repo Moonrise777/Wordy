@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Routes, Route, Navigate, BrowserRouter } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import Auth from './pages/Login/Auth.jsx';
 import Navbar from './components/Navbar/Navbar.jsx';
 import Footer from './components/Footer/Footer.jsx';
@@ -75,7 +75,6 @@ useEffect(() => {
 
   return (
     <div className='app'>
-      <BrowserRouter basename="/Wordy/">
       <Navbar isLoggedIn={isLoggedIn} user={user} language={language} setLanguage={setLanguage} />
       <Routes>
         <Route path="/" element={<Main user={user} language={language} />} />
@@ -99,7 +98,6 @@ useEffect(() => {
         />
         <Route path="*" element={<NotFound />} />
       </Routes>
-      </BrowserRouter>
       <Footer language={language} />
     </div>
   );
