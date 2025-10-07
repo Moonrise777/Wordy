@@ -10,7 +10,7 @@ import { saveProfile } from '../../web_vitals/authService';
 
 import IconWordy from '../../assets/Icon_Wordy.png';
 
-// Importa las imágenes directamente desde src
+// Importa las imágenes 
 import Dog from '@profilepics/dog.png';
 import Hiyoko from '@profilepics/hiyoko.png';
 import Neko from '@profilepics/neko.png';
