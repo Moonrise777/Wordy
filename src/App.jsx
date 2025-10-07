@@ -6,7 +6,7 @@ import Footer from './components/Footer/Footer.jsx';
 import Main from './pages/Main/Main.jsx';
 import Profile from './pages/Profile/Profile.jsx';
 import NotFound from './pages/Error/NotFound.jsx';
-// Asegúrate de que saveProfile esté importado
+
 import { onAuthStateChanged, onUserDataChanged, saveProfile } from './web_vitals/authService';
 
 export default function App() {
@@ -14,7 +14,7 @@ export default function App() {
   const [user, setUser] = useState(null);
   const [loadingAuth, setLoadingAuth] = useState(true);
   const [language, setLanguage] = useState('es');
-  const [isDark, setIsDark] = useState(false); // ✅ El estado del tema vive aquí
+  const [isDark, setIsDark] = useState(false); 
 
   // --- Lógica de Idioma ---
   useEffect(() => {
@@ -45,19 +45,25 @@ export default function App() {
       unsubscribeUserData = onUserDataChanged(user.uid, (userData) => {
         const themeIsDark = userData?.theme === 'dark';
         setIsDark(themeIsDark); // Actualizamos el estado de React
-        document.body.className = '';
-        document.body.classList.add(themeIsDark ? 'dark-theme' : 'light-theme');
       });
     } else {
       // Si no hay usuario, resetea al tema claro
       setIsDark(false);
-      document.body.className = '';
-      document.body.classList.add('light-theme');
     }
     return () => { if (unsubscribeUserData) unsubscribeUserData(); };
   }, [user]);
 
-  // ✅ La función para cambiar el tema ahora vive aquí
+  // ✅ APLICA el tema a la página CADA VEZ que 'isDark' cambia
+  useEffect(() => {
+    document.body.className = ''; // Limpia clases previas
+    if (isDark) {
+      document.body.classList.add('dark-theme');
+    } else {
+      document.body.classList.add('light-theme');
+    }
+  }, [isDark]);
+
+  // ✅ La función para cambiar el tema 
   const toggleTheme = async () => {
     const newDark = !isDark;
     setIsDark(newDark); // Actualiza la UI instantáneamente
@@ -76,7 +82,6 @@ export default function App() {
 
   return (
     <div className='app'>
-      {/* 👇 Pasamos el estado y la función como props al Navbar */}
       <Navbar
         isLoggedIn={isLoggedIn}
         user={user}
