@@ -230,7 +230,7 @@ const Main = ({ language }) => {
           title: isWin ? (language === 'es' ? "¡Ganaste!" : "You won!") : (language === 'es' ? "Perdiste" : "You lost"),
           text: language === 'es' ? `La palabra era ${word}` : `The word was ${word}`,
           icon: isWin ? "success" : "error",
-          allowOutsideClick: false,
+          allowOutsideClick: true,
           allowEscapeKey: false,
           confirmButtonText: language === 'es' ? 'Jugar de nuevo' : 'Play Again',
           confirmButtonColor: '#f9a8d4'
