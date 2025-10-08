@@ -9,6 +9,7 @@ const Main = ({ language }) => {
   const [word, setWord] = useState("");
   const [loadingWord, setLoadingWord] = useState(true);
   const [grid, setGrid] = useState(Array(5).fill(Array(5).fill("")));
+  const [colors, setColors] = useState(Array(5).fill(Array(5).fill("transparent")));
   const [currentRow, setCurrentRow] = useState(0);
   const previousWords = useRef(new Set());
   const maxAttempts = 5;
@@ -121,6 +122,7 @@ const Main = ({ language }) => {
       previousWords.current.add(newWord);
       setWord(newWord);
       setGrid(Array(5).fill(Array(5).fill("")));
+      setColors(Array(5).fill(Array(5).fill("transparent")));
       setCurrentRow(0);
     } catch (err) {
       console.error("Error al obtener palabra:", err);
@@ -135,17 +137,23 @@ const Main = ({ language }) => {
   }, [language]);
 
   useEffect(() => {
-    if (!loadingWord) {
+    if (!loadingWord && currentRow < maxAttempts) {
       inputRefs.current[currentRow][0]?.focus();
     }
   }, [currentRow, loadingWord]);
 
   const handleInputChange = (e, row, col) => {
-    const value = e.target.value.toUpperCase();
+    const value = e.target.value.toUpperCase().slice(-1);
 
     if (/^[A-ZÑ]$/.test(value)) {
-      const newGrid = grid.map(r => [...r]);
-      newGrid[row][col] = value;
+      const newGrid = grid.map((r, rIdx) => {
+        if (rIdx === row) {
+          const newRow = [...r];
+          newRow[col] = value;
+          return newRow;
+        }
+        return r;
+      });
       setGrid(newGrid);
 
       if (col < 4) {
@@ -155,24 +163,50 @@ const Main = ({ language }) => {
   };
 
   const handleKeyDown = (e, row, col) => {
-    if (e.key === "Backspace" && grid[row][col] === "") {
-      if (col > 0) {
+    if (e.key === "Backspace") {
+      const newGrid = grid.map(r => [...r]);
+      if (newGrid[row][col]) {
+        newGrid[row][col] = "";
+      } else if (col > 0) {
         inputRefs.current[row][col - 1]?.focus();
+        newGrid[row][col - 1] = "";
       }
-    }
-    else if (e.key === "Enter") {
+      setGrid(newGrid);
+    } else if (e.key === "Enter") {
       handleSubmit();
     }
   };
 
   const handleSubmit = () => {
-    if (loadingWord) return;
+    if (loadingWord || currentRow >= maxAttempts) return;
     const guessWord = grid[currentRow].join("");
 
     if (guessWord.length < 5) {
       Swal.fire({ toast: true, position: "top-end", icon: "warning", title: language === 'es' ? "La palabra debe tener 5 letras" : "Word must have 5 letters", showConfirmButton: false, timer: 2000 });
       return;
     }
+
+    const newColors = [...colors];
+    const rowColors = Array(5).fill('crimson');
+    const guessLetters = guessWord.split('');
+    const wordLetters = word.split('');
+
+    guessLetters.forEach((letter, index) => {
+      if (wordLetters[index] === letter) {
+        rowColors[index] = 'green';
+        wordLetters[index] = null;
+      }
+    });
+
+    guessLetters.forEach((letter, index) => {
+      if (rowColors[index] !== 'green' && wordLetters.includes(letter)) {
+        rowColors[index] = 'goldenrod';
+        wordLetters[wordLetters.indexOf(letter)] = null;
+      }
+    });
+
+    newColors[currentRow] = rowColors;
+    setColors(newColors);
 
     if (guessWord === word) {
       Swal.fire({ title: language === 'es' ? "¡Ganaste!" : "You won!", text: language === 'es' ? `La palabra era ${word}` : `The word was ${word}`, icon: "success" }).then(() => fetchWord(language));
@@ -185,13 +219,6 @@ const Main = ({ language }) => {
     }
 
     setCurrentRow((r) => r + 1);
-  };
-
-  const getLetterColor = (letter, index, rowIndex) => {
-    if (rowIndex >= currentRow || !letter) return "transparent";
-    if (word[index] === letter) return "green";
-    if (word.includes(letter)) return "goldenrod";
-    return "crimson";
   };
 
   return (
@@ -211,18 +238,18 @@ const Main = ({ language }) => {
                     maxLength="1"
                     value={letter}
                     className="guess-cell"
-                    style={{
-                      backgroundColor: getLetterColor(letter, colIndex, rowIndex),
-                    }}
+                    style={{ backgroundColor: colors[rowIndex][colIndex] }}
                     disabled={rowIndex !== currentRow}
                     onChange={(e) => handleInputChange(e, rowIndex, colIndex)}
                     onKeyDown={(e) => handleKeyDown(e, rowIndex, colIndex)}
+                    autoCapitalize="off"
+                    autoCorrect="off"
+                    autoComplete="off"
                   />
                 ))}
               </div>
             ))}
           </div>
-
           <button onClick={handleSubmit} className="submit-btn">
             {language === 'es' ? 'Enviar' : 'Submit'}
           </button>
