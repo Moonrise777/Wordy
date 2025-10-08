@@ -142,34 +142,38 @@ const Main = ({ language }) => {
     }
   }, [currentRow, loadingWord]);
 
-  // ✅ **LÓGICA DE ENTRADA Y BORRADO UNIFICADA PARA MÓVIL Y ESCRITORIO**
+  // Esta función SOLO se encarga de AÑADIR letras
   const handleInputChange = (e, row, col) => {
-    const newGrid = grid.map(r => [...r]);
-
-    // Si el valor del input está vacío, significa que el usuario borró.
-    if (e.target.value === "") {
-        newGrid[row][col] = "";
-        setGrid(newGrid);
-        if (col > 0) {
-            inputRefs.current[row][col - 1]?.focus();
-        }
-        return;
-    }
-
-    // Si el usuario escribió una letra.
-    const value = e.target.value.toUpperCase().slice(-1);
+    const value = e.target.value.slice(-1).toUpperCase();
     if (/^[A-ZÑ]$/.test(value)) {
+      const newGrid = grid.map(r => [...r]);
       newGrid[row][col] = value;
       setGrid(newGrid);
+
       if (col < 4) {
         inputRefs.current[row][col + 1]?.focus();
       }
     }
   };
   
-  // Este handler es solo para teclas especiales como Enter.
-  const handleKeyDown = (e) => {
-    if (e.key === "Enter") {
+  // ✅ **LÓGICA DE BORRADO UNIFICADA Y MEJORADA**
+  // Esta función maneja el borrado y la tecla Enter
+  const handleKeyDown = (e, row, col) => {
+    if (e.key === "Backspace") {
+      e.preventDefault(); // Evita comportamientos no deseados del navegador
+      const newGrid = grid.map(r => [...r]);
+
+      // Si el cuadro actual tiene una letra, la borra y se queda ahí
+      if (newGrid[row][col]) {
+        newGrid[row][col] = "";
+        setGrid(newGrid);
+      } 
+      // Si el cuadro está vacío, se mueve al anterior
+      else if (col > 0) {
+        inputRefs.current[row][col - 1]?.focus();
+      }
+    } 
+    else if (e.key === "Enter") {
       handleSubmit();
     }
   };
@@ -201,11 +205,10 @@ const Main = ({ language }) => {
         wordLetters[wordLetters.indexOf(letter)] = null;
       }
     });
-
+    
     newColors[currentRow] = rowColors;
     setColors(newColors);
-
-    // ✅ **LÓGICA DE ALERTAS CORREGIDA**
+    
     const showResultAlert = (result) => {
         const isWin = result === 'win';
         Swal.fire({
@@ -217,7 +220,7 @@ const Main = ({ language }) => {
             confirmButtonText: language === 'es' ? 'Jugar de nuevo' : 'Play Again',
             confirmButtonColor: '#f9a8d4'
         }).then((result) => {
-            if (result.isConfirmed) {
+            if (result.isConfirmed || result.isDismissed) {
                 fetchWord(language);
             }
         });
