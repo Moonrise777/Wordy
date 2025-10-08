@@ -31,8 +31,6 @@ Tienes 5 intentos. ¡Sé estratégico!
 🔗 Link al juego
 ¡Prueba el juego aquí! 👉 [https://moonrise777.github.io/Wordy/]
 
-Of course, here is the English translation of your `README.md` file.
-
 ---
 
 Wordy 🌍✨
