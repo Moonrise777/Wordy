@@ -1,9 +1,30 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import Swal from "sweetalert2";
 import "./Main.css";
 import IconWordy from "../../assets/Icon_Wordy.png";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faDeleteLeft } from '@fortawesome/free-solid-svg-icons';
 
 const API_URL = "https://random-words-api.kushcreates.com/api";
+
+// Componente del Teclado Virtual
+const Keyboard = ({ layout, onKeyPress, keyColors }) => (
+  <div className="keyboard">
+    {layout.map((row, rowIndex) => (
+      <div key={rowIndex} className="keyboard-row">
+        {row.map((key) => {
+          const keyState = keyColors[key] || '';
+          const keyClass = `key ${keyState} ${key.length > 1 ? 'wide' : ''}`;
+          return (
+            <button key={key} className={keyClass} onClick={() => onKeyPress(key)}>
+              {key === 'BACKSPACE' ? <FontAwesomeIcon icon={faDeleteLeft} /> : key}
+            </button>
+          );
+        })}
+      </div>
+    ))}
+  </div>
+);
 
 const Main = ({ language }) => {
   const [word, setWord] = useState("");
@@ -11,10 +32,23 @@ const Main = ({ language }) => {
   const [grid, setGrid] = useState(Array(5).fill(Array(5).fill("")));
   const [colors, setColors] = useState(Array(5).fill(Array(5).fill("transparent")));
   const [currentRow, setCurrentRow] = useState(0);
+  const [keyColors, setKeyColors] = useState({});
   const previousWords = useRef(new Set());
   const maxAttempts = 5;
-  const inputRefs = useRef(Array(maxAttempts).fill(null).map(() => Array(5).fill(null)));
 
+  const keyboardLayouts = {
+    es: [
+      ['Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P'],
+      ['A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L', 'Ñ'],
+      ['ENTER', 'Z', 'X', 'C', 'V', 'B', 'N', 'M', 'BACKSPACE']
+    ],
+    en: [
+      ['Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P'],
+      ['A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L'],
+      ['ENTER', 'Z', 'X', 'C', 'V', 'B', 'N', 'M', 'BACKSPACE']
+    ]
+  };
+  
   const showTutorial = () => {
     const tutorialText = language === 'es'
       ? `
@@ -100,7 +134,7 @@ const Main = ({ language }) => {
     };
   }, [language]);
 
-  const fetchWord = async (lang) => {
+  const fetchWord = useCallback(async (lang) => {
     setLoadingWord(true);
     try {
       const apiLang = lang === "es" ? "es" : "en";
@@ -116,62 +150,27 @@ const Main = ({ language }) => {
         newWord = retryData?.[0]?.word?.toUpperCase();
         attempts++;
       }
-
       if (!newWord) newWord = lang === "es" ? "CASAS" : "APPLE";
-
+      
       previousWords.current.add(newWord);
       setWord(newWord);
       setGrid(Array(5).fill(Array(5).fill("")));
       setColors(Array(5).fill(Array(5).fill("transparent")));
       setCurrentRow(0);
+      setKeyColors({});
     } catch (err) {
       console.error("Error al obtener palabra:", err);
       setWord(lang === "es" ? "MASAS" : "APPLE");
     } finally {
       setLoadingWord(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     fetchWord(language);
-  }, [language]);
+  }, [language, fetchWord]);
 
-  useEffect(() => {
-    if (!loadingWord && currentRow < maxAttempts) {
-      inputRefs.current[currentRow][0]?.focus();
-    }
-  }, [currentRow, loadingWord]);
-
-  const handleInputChange = (e, row, col) => {
-    const value = e.target.value.toUpperCase();
-    const newGrid = grid.map(r => [...r]);
-    newGrid[row][col] = ""; // Limpia el valor actual primero
-
-    if (value) { // Si el usuario escribió una letra
-      newGrid[row][col] = value.slice(-1); // Toma solo la última letra
-      setGrid(newGrid);
-      if (col < 4) {
-        inputRefs.current[row][col + 1]?.focus();
-      }
-    } else { // Si el usuario borró la letra
-      setGrid(newGrid);
-      if (col > 0) {
-        inputRefs.current[row][col - 1]?.focus();
-      }
-    }
-  };
-
-  const handleKeyDown = (e, row, col) => {
-    if (e.key === "Backspace" && !grid[row][col]) {
-        if (col > 0) {
-            inputRefs.current[row][col - 1]?.focus();
-        }
-    } else if (e.key === "Enter") {
-      handleSubmit();
-    }
-  };
-
-  const handleSubmit = () => {
+  const handleSubmit = useCallback(() => {
     if (loadingWord || currentRow >= maxAttempts) return;
     const guessWord = grid[currentRow].join("");
 
@@ -180,59 +179,112 @@ const Main = ({ language }) => {
       return;
     }
 
-    const newColors = [...colors];
-    const rowColors = Array(5).fill('crimson');
+    const rowColors = Array(5).fill('transparent');
     const guessLetters = guessWord.split('');
     const wordLetters = word.split('');
+    const letterStatus = {};
 
     guessLetters.forEach((letter, index) => {
       if (wordLetters[index] === letter) {
-        rowColors[index] = 'green';
+        rowColors[index] = '#6aaa64';
+        letterStatus[letter] = 'correct';
         wordLetters[index] = null;
       }
     });
 
     guessLetters.forEach((letter, index) => {
-      if (rowColors[index] !== 'green' && wordLetters.includes(letter)) {
-        rowColors[index] = 'goldenrod';
+      if (rowColors[index] === 'transparent' && wordLetters.includes(letter)) {
+        rowColors[index] = '#c9b458';
+        if (letterStatus[letter] !== 'correct') letterStatus[letter] = 'present';
         wordLetters[wordLetters.indexOf(letter)] = null;
       }
     });
+    
+    guessLetters.forEach((letter, index) => {
+      if (rowColors[index] === 'transparent') {
+        rowColors[index] = '#787c7e';
+        if (!letterStatus[letter]) letterStatus[letter] = 'absent';
+      }
+    });
 
-    newColors[currentRow] = rowColors;
-    setColors(newColors);
+    setColors(prevColors => {
+      const newColorsState = [...prevColors];
+      newColorsState[currentRow] = rowColors;
+      return newColorsState;
+    });
 
-    if (guessWord === word) {
-      Swal.fire({
-        title: language === 'es' ? "¡Ganaste!" : "You won!",
-        text: language === 'es' ? `La palabra era ${word}` : `The word was ${word}`,
-        icon: "success",
-        // ✅ Ajustes clave:
-        allowOutsideClick: true, // Permite cerrar haciendo clic afuera
-        allowEscapeKey: true,    // Permite cerrar con la tecla Escape
-        confirmButtonText: language === 'es' ? 'Jugar de nuevo' : 'Play Again',
-        confirmButtonColor: '#f9a8d4'
-      }).then(() => fetchWord(language));
+    setKeyColors(prevKeyColors => {
+      const updatedKeyColors = { ...prevKeyColors };
+      Object.keys(letterStatus).forEach(letter => {
+        if (updatedKeyColors[letter] !== 'correct') {
+          updatedKeyColors[letter] = letterStatus[letter];
+        }
+      });
+      return updatedKeyColors;
+    });
+
+    const isWin = guessWord === word;
+    if (isWin || currentRow + 1 === maxAttempts) {
+      setTimeout(() => {
+        Swal.fire({
+          title: isWin ? (language === 'es' ? "¡Ganaste!" : "You won!") : (language === 'es' ? "Perdiste" : "You lost"),
+          text: language === 'es' ? `La palabra era ${word}` : `The word was ${word}`,
+          icon: isWin ? "success" : "error",
+          allowOutsideClick: false,
+          allowEscapeKey: false,
+          confirmButtonText: language === 'es' ? 'Jugar de nuevo' : 'Play Again',
+          confirmButtonColor: '#f9a8d4'
+        }).then((result) => {
+          if (result.isConfirmed) {
+            fetchWord(language);
+          }
+        });
+      }, 500); // Pequeño delay para que la alerta no se sienta abrupta
       return;
     }
-
-    if (currentRow + 1 === maxAttempts) {
-      Swal.fire({
-        title: language === 'es' ? "Perdiste" : "You lost",
-        text: language === 'es' ? `La palabra era ${word}` : `The word was ${word}`,
-        icon: "error",
-        // ✅ Ajustes clave:
-        allowOutsideClick: true, // Permite cerrar haciendo clic afuera
-        allowEscapeKey: true,    // Permite cerrar con la tecla Escape
-        confirmButtonText: language === 'es' ? 'Intentar de nuevo' : 'Try Again',
-        confirmButtonColor: '#f9a8d4'
-      }).then(() => fetchWord(language));
-      return;
-    }
-
     setCurrentRow((r) => r + 1);
-  };
+  }, [currentRow, grid, language, word, loadingWord, maxAttempts, fetchWord, keyColors]);
 
+  const handleKeyPress = useCallback((key) => {
+    if (currentRow >= maxAttempts || loadingWord) return;
+
+    if (key === 'ENTER') {
+      handleSubmit();
+    } else if (key === 'BACKSPACE') {
+      setGrid(prevGrid => {
+        const newGrid = prevGrid.map(r => [...r]);
+        const row = newGrid[currentRow];
+        const lastFilledIndex = row.findLastIndex(l => l !== '');
+        if (lastFilledIndex !== -1) {
+          row[lastFilledIndex] = '';
+        }
+        return newGrid;
+      });
+    } else if (/^[A-ZÑ]$/.test(key)) {
+      setGrid(prevGrid => {
+        const newGrid = prevGrid.map(r => [...r]);
+        const row = newGrid[currentRow];
+        const firstEmptyIndex = row.findIndex(l => l === '');
+        if (firstEmptyIndex !== -1) {
+          row[firstEmptyIndex] = key;
+        }
+        return newGrid;
+      });
+    }
+  }, [currentRow, maxAttempts, loadingWord, handleSubmit, grid]);
+
+  useEffect(() => {
+    const handlePhysicalKeyboard = (e) => {
+      let key = e.key.toUpperCase();
+      if (key === 'BACKSPACE' || key === 'ENTER' || (/^[A-ZÑ]$/.test(key) && key.length === 1)) {
+        e.preventDefault();
+        handleKeyPress(key);
+      }
+    };
+    window.addEventListener('keydown', handlePhysicalKeyboard);
+    return () => window.removeEventListener('keydown', handlePhysicalKeyboard);
+  }, [handleKeyPress]);
+  
   return (
     <div className="wordle-container">
       {loadingWord ? (
@@ -243,28 +295,25 @@ const Main = ({ language }) => {
             {grid.map((row, rowIndex) => (
               <div key={rowIndex} className="guess-row">
                 {row.map((letter, colIndex) => (
-                  <input
+                  <div
                     key={colIndex}
-                    ref={(el) => (inputRefs.current[rowIndex][colIndex] = el)}
-                    type="text"
-                    maxLength="1"
-                    value={letter}
-                    className="guess-cell"
-                    style={{ backgroundColor: colors[rowIndex][colIndex] }}
-                    disabled={rowIndex !== currentRow}
-                    onChange={(e) => handleInputChange(e, rowIndex, colIndex)}
-                    onKeyDown={(e) => handleKeyDown(e, rowIndex, colIndex)}
-                    autoCapitalize="off"
-                    autoCorrect="off"
-                    autoComplete="off"
-                  />
+                    className={`guess-cell ${rowIndex === currentRow ? 'active-row' : ''}`}
+                    style={{ 
+                      backgroundColor: colors[rowIndex][colIndex],
+                      borderColor: colors[rowIndex][colIndex] !== 'transparent' ? 'transparent' : ''
+                    }}
+                  >
+                    {letter}
+                  </div>
                 ))}
               </div>
             ))}
           </div>
-          <button onClick={handleSubmit} className="submit-btn">
-            {language === 'es' ? 'Enviar' : 'Submit'}
-          </button>
+          <Keyboard 
+            layout={keyboardLayouts[language]} 
+            onKeyPress={handleKeyPress} 
+            keyColors={keyColors} 
+          />
         </>
       )}
     </div>
