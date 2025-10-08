@@ -12,6 +12,7 @@
   flex-direction: column;
   gap: 5px;
   margin-bottom: 2rem;
+  margin-top: 10px;
 }
 
 .guess-row {
