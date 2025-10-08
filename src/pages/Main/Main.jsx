@@ -14,14 +14,6 @@ const Main = ({ language }) => {
   const maxAttempts = 5;
   const hiddenInputRef = useRef(null);
 
-  useEffect(() => {
-    const hasSeenTutorial = localStorage.getItem('wordyTutorialSeen');
-    if (!hasSeenTutorial) {
-      showTutorial();
-      localStorage.setItem('wordyTutorialSeen', 'true');
-    }
-  }, []);
-
   const showTutorial = () => {
     const tutorialText = language === 'es' 
       ? `
@@ -93,6 +85,14 @@ const Main = ({ language }) => {
   };
 
   useEffect(() => {
+    const hasSeenTutorial = localStorage.getItem('wordyTutorialSeen');
+    if (!hasSeenTutorial) {
+      showTutorial();
+      localStorage.setItem('wordyTutorialSeen', 'true');
+    }
+  }, [language]);
+
+  useEffect(() => {
     window.showWordyTutorial = showTutorial;
     return () => {
       delete window.showWordyTutorial;
@@ -106,27 +106,13 @@ const Main = ({ language }) => {
       const url = `${API_URL}?language=${apiLang}&length=5&type=uppercase&words=1`;
       const resp = await fetch(url);
       const data = await resp.json();
-
-      let candidate =
-        Array.isArray(data) && data.length > 0 && data[0].word
-          ? data[0].word
-          : null;
-      let newWord = candidate ? candidate.toUpperCase() : null;
+      let newWord = data?.[0]?.word?.toUpperCase();
 
       let attempts = 0;
-      while (
-        (!newWord || previousWords.current.has(newWord)) &&
-        attempts < 5
-      ) {
-        const retry = await fetch(url);
-        const retryData = await retry.json();
-        const w =
-          Array.isArray(retryData) &&
-          retryData.length > 0 &&
-          retryData[0].word
-            ? retryData[0].word
-            : null;
-        newWord = w ? w.toUpperCase() : null;
+      while ((!newWord || previousWords.current.has(newWord)) && attempts < 5) {
+        const retryResp = await fetch(url);
+        const retryData = await retryResp.json();
+        newWord = retryData?.[0]?.word?.toUpperCase();
         attempts++;
       }
 
@@ -134,12 +120,12 @@ const Main = ({ language }) => {
 
       previousWords.current.add(newWord);
       setWord(newWord);
-      setGrid(Array(5).fill(null).map(() => Array(5).fill("")));
+      setGrid(Array(5).fill(Array(5).fill("")));
       setCurrentRow(0);
     } catch (err) {
       console.error("Error al obtener palabra:", err);
       setWord(lang === "es" ? "MASAS" : "APPLE");
-      setGrid(Array(5).fill(null).map(() => Array(5).fill("")));
+      setGrid(Array(5).fill(Array(5).fill("")));
       setCurrentRow(0);
     } finally {
       setLoadingWord(false);
@@ -150,44 +136,13 @@ const Main = ({ language }) => {
     fetchWord(language);
   }, [language]);
 
-  useEffect(() => {
-    const handleKeyDown = (e) => {
-      if (loadingWord) return;
-
-      if (e.key === "Enter") {
-        handleSubmit();
-      } else if (/^[a-zA-ZñÑ]$/.test(e.key)) {
-        addLetter(e.key.toUpperCase());
-      } else if (e.key === "Backspace") {
-        removeLetter();
-      }
-    };
-    
-    const inputElement = hiddenInputRef.current;
-    if (inputElement) {
-        inputElement.addEventListener("keydown", handleKeyDown);
-    }
-
-    return () => {
-        if (inputElement) {
-            inputElement.removeEventListener("keydown", handleKeyDown);
-        }
-    };
-  });
-
-  const focusInput = () => {
-    hiddenInputRef.current?.focus();
-  };
-
-  useEffect(() => {
-    focusInput();
-  }, [loadingWord]);
-
   const addLetter = (letter) => {
     setGrid((prev) => {
       const newGrid = prev.map((r) => [...r]);
-      const idx = newGrid[currentRow].findIndex((l) => l === "");
-      if (idx !== -1) newGrid[currentRow][idx] = letter;
+      if (currentRow < maxAttempts) {
+        const idx = newGrid[currentRow].findIndex((l) => l === "");
+        if (idx !== -1) newGrid[currentRow][idx] = letter;
+      }
       return newGrid;
     });
   };
@@ -195,82 +150,84 @@ const Main = ({ language }) => {
   const removeLetter = () => {
     setGrid((prev) => {
       const newGrid = prev.map((r) => [...r]);
-      const idx = newGrid[currentRow].findLastIndex((l) => l !== "");
-      if (idx !== -1) newGrid[currentRow][idx] = "";
+      if (currentRow < maxAttempts) {
+        const idx = newGrid[currentRow].findLastIndex((l) => l !== "");
+        if (idx !== -1) newGrid[currentRow][idx] = "";
+      }
       return newGrid;
     });
   };
 
+  // ✅ **CAMBIO PRINCIPAL AQUÍ**
+  const handleInput = (e) => {
+    const letter = e.target.value.slice(-1).toUpperCase();
+    if (/^[A-ZÑ]$/.test(letter)) {
+      addLetter(letter);
+    }
+    // Limpia el input inmediatamente para que esté listo para la siguiente letra
+    e.target.value = "";
+  };
+
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (loadingWord) return;
+      if (e.key === "Enter") {
+        handleSubmit();
+      } else if (e.key === "Backspace") {
+        removeLetter();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [grid, currentRow, word, loadingWord, language]);
+  
+  const focusInput = () => {
+    hiddenInputRef.current?.focus();
+  };
+
+  useEffect(() => {
+    if (!loadingWord) {
+      focusInput();
+    }
+  }, [loadingWord]);
+
   const handleSubmit = () => {
     if (loadingWord) return;
-
     const guessWord = grid[currentRow].join("");
     if (guessWord.length < 5) {
-      Swal.fire({
-        toast: true,
-        position: "top-end",
-        icon: "warning",
-        title: language === 'es' ? "La palabra debe tener 5 letras" : "Word must have 5 letters",
-        showConfirmButton: false,
-        timer: 2000,
-        timerProgressBar: true,
-      });
+      Swal.fire({ toast: true, position: "top-end", icon: "warning", title: language === 'es' ? "La palabra debe tener 5 letras" : "Word must have 5 letters", showConfirmButton: false, timer: 2000, timerProgressBar: true });
       return;
     }
-
     if (guessWord === word) {
-      Swal.fire({
-        title: language === 'es' ? "¡Ganaste!" : "You won!",
-        text: language === 'es' ? `La palabra era ${word}` : `The word was ${word}`,
-        icon: "success",
-        allowOutsideClick: true,
-        allowEscapeKey: false, 
-        allowEnterKey: false,
-        confirmButtonColor: '#f9a8d4',
-      }).then(() => fetchWord(language));
+      Swal.fire({ title: language === 'es' ? "¡Ganaste!" : "You won!", text: language === 'es' ? `La palabra era ${word}` : `The word was ${word}`, icon: "success", allowOutsideClick: true, confirmButtonColor: '#f9a8d4' }).then(() => fetchWord(language));
       return;
     }
-
     if (currentRow + 1 === maxAttempts) {
-      Swal.fire({
-        title: language === 'es' ? "Perdiste" : "You lost",
-        text: language === 'es' ? `La palabra era ${word}` : `The word was ${word}`,
-        icon: "error",
-        allowOutsideClick: true,
-        allowEscapeKey: false, 
-        allowEnterKey: false,
-        confirmButtonColor: '#f9a8d4',
-      }).then(() => fetchWord(language));
+      Swal.fire({ title: language === 'es' ? "Perdiste" : "You lost", text: language === 'es' ? `La palabra era ${word}` : `The word was ${word}`, icon: "error", allowOutsideClick: true, confirmButtonColor: '#f9a8d4' }).then(() => fetchWord(language));
       return;
     }
-
     setCurrentRow((r) => r + 1);
   };
 
   const getLetterColor = (letter, index, rowIndex) => {
-    if (rowIndex >= currentRow) return "transparent";
+    if (rowIndex >= currentRow || !letter) return "transparent";
     if (word[index] === letter) return "green";
     if (word.includes(letter)) return "goldenrod";
     return "crimson";
   };
-  
+
   return (
     <div className="wordle-container" onClick={focusInput}>
       <input
         ref={hiddenInputRef}
+        onInput={handleInput} // ✅ **CAMBIO PRINCIPAL AQUÍ**
         type="text"
-        style={{
-          position: 'absolute',
-          top: '-9999px',
-          left: '-9999px',
-          opacity: 0,
-        }}
+        style={{ position: 'absolute', top: '-9999px', left: '-9999px', opacity: 0 }}
         autoComplete="off"
         autoCorrect="off"
         autoCapitalize="off"
         spellCheck="false"
       />
-
       {loadingWord ? (
         <p>{language === 'es' ? 'Cargando palabra...' : 'Loading word...'}</p>
       ) : (
@@ -281,12 +238,8 @@ const Main = ({ language }) => {
                 {row.map((letter, colIndex) => (
                   <div
                     key={colIndex}
-                    className={`guess-cell ${
-                      rowIndex === currentRow ? "active" : "inactive"
-                    }`}
-                    style={{
-                      backgroundColor: getLetterColor(letter, colIndex, rowIndex),
-                    }}
+                    className={`guess-cell ${rowIndex === currentRow && !grid[currentRow][colIndex] ? "active" : "inactive"}`}
+                    style={{ backgroundColor: getLetterColor(letter, colIndex, rowIndex) }}
                   >
                     {letter}
                   </div>
@@ -294,7 +247,6 @@ const Main = ({ language }) => {
               </div>
             ))}
           </div>
-
           <button onClick={handleSubmit} className="submit-btn">
             {language === 'es' ? 'Enviar' : 'Submit'}
           </button>
