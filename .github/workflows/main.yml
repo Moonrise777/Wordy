@@ -1,66 +1,56 @@
-# Nombre del workflow que aparecerá en la pestaña "Actions" de GitHub
+# Nombre del workflow
 name: Deploy to GitHub Pages
 
-# Disparador: Define cuándo se ejecutará este workflow
 on:
-  # Se ejecuta cada vez que haces un push a la rama 'main'
   push:
     branches:
       - main
-  
-  # Permite ejecutar este workflow manualmente desde la pestaña "Actions"
   workflow_dispatch:
 
-# Permisos: Otorga los permisos necesarios para que el workflow pueda desplegar
 permissions:
   contents: read
   pages: write
   id-token: write
 
-# Trabajos: Define la secuencia de tareas a ejecutar
 jobs:
   deploy:
-    # Configura el entorno para el despliegue en GitHub Pages
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
-    
-    # Define el tipo de máquina virtual que se usará
     runs-on: ubuntu-latest
-    
-    # Pasos: Las acciones que se ejecutarán en secuencia
     steps:
-      # 1. Clona el repositorio en la máquina virtual
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # 2. Configura el entorno de Node.js
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20.x
-          cache: 'npm' # Habilita el caché para acelerar instalaciones futuras
+          cache: 'npm'
 
-      # 3. Instala las dependencias del proyecto de forma limpia
       - name: Install dependencies
         run: npm ci
 
-      # 4. Construye la versión de producción de tu aplicación
+      # Construye el proyecto usando los secrets
       - name: Build project
-        run: npm run build # Este comando usa la configuración de tu vite.config.js
+        run: npm run build
+        env:
+          VITE_FIREBASE_API_KEY: ${{ secrets.VITE_FIREBASE_API_KEY }}
+          VITE_FIREBASE_AUTH_DOMAIN: ${{ secrets.VITE_FIREBASE_AUTH_DOMAIN }}
+          VITE_FIREBASE_PROJECT_ID: ${{ secrets.VITE_FIREBASE_PROJECT_ID }}
+          VITE_FIREBASE_STORAGE_BUCKET: ${{ secrets.VITE_FIREBASE_STORAGE_BUCKET }}
+          VITE_FIREBASE_MESSAGING_SENDER_ID: ${{ secrets.VITE_FIREBASE_MESSAGING_SENDER_ID }}
+          VITE_FIREBASE_APP_ID: ${{ secrets.VITE_FIREBASE_APP_ID }}
+          VITE_FIREBASE_MEASUREMENT_ID: ${{ secrets.VITE_FIREBASE_MEASUREMENT_ID }}
 
-      # 5. Prepara el artefacto para subirlo a GitHub Pages
       - name: Setup Pages
         uses: actions/configure-pages@v5
 
-      # 6. Sube la carpeta 'dist' como un artefacto
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          # La ruta a la carpeta que se va a subir
           path: './dist'
 
-      # 7. Despliega el artefacto subido en GitHub Pages
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
