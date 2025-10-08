@@ -138,13 +138,23 @@ const Main = ({ language }) => {
 
   useEffect(() => {
     if (!loadingWord && currentRow < maxAttempts) {
-      inputRefs.current[currentRow][0]?.focus();
+      // Enfoca la primera celda vacía de la fila actual, o la última si está llena.
+      const firstEmpty = grid[currentRow].findIndex(cell => cell === "");
+      const focusIndex = firstEmpty === -1 ? 4 : firstEmpty;
+      inputRefs.current[currentRow][focusIndex]?.focus();
     }
   }, [currentRow, loadingWord]);
 
-  // Esta función SOLO se encarga de AÑADIR letras
+  // ✅ **LÓGICA DE ENTRADA UNIFICADA**
   const handleInputChange = (e, row, col) => {
-    const value = e.target.value.slice(-1).toUpperCase();
+    const value = e.target.value.toUpperCase();
+    
+    // Si el valor está vacío, es una acción de borrado (manejada en onKeyDown)
+    if (value === "") {
+        return;
+    }
+    
+    // Si es una letra, la añade y avanza
     if (/^[A-ZÑ]$/.test(value)) {
       const newGrid = grid.map(r => [...r]);
       newGrid[row][col] = value;
@@ -156,20 +166,16 @@ const Main = ({ language }) => {
     }
   };
   
-  // ✅ **LÓGICA DE BORRADO UNIFICADA Y MEJORADA**
-  // Esta función maneja el borrado y la tecla Enter
+  // ✅ **LÓGICA DE TECLAS ESPECIALES (INCLUYE BORRADO)**
   const handleKeyDown = (e, row, col) => {
     if (e.key === "Backspace") {
-      e.preventDefault(); // Evita comportamientos no deseados del navegador
+      e.preventDefault();
       const newGrid = grid.map(r => [...r]);
 
-      // Si el cuadro actual tiene una letra, la borra y se queda ahí
       if (newGrid[row][col]) {
         newGrid[row][col] = "";
         setGrid(newGrid);
-      } 
-      // Si el cuadro está vacío, se mueve al anterior
-      else if (col > 0) {
+      } else if (col > 0) {
         inputRefs.current[row][col - 1]?.focus();
       }
     } 
