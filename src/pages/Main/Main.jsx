@@ -134,23 +134,25 @@ const Main = ({ language }) => {
     };
   }, [language]);
 
-  const fetchWord = useCallback(async (lang) => {
+
+const fetchWord = useCallback(async (lang) => {
     setLoadingWord(true);
     try {
       const apiLang = lang === "es" ? "es" : "en";
       const url = `${API_URL}?language=${apiLang}&length=5&type=uppercase&words=1`;
-      const resp = await fetch(url);
-      const data = await resp.json();
-      let newWord = data?.[0]?.word?.toUpperCase();
-
+      let newWord = null;
       let attempts = 0;
-      while ((!newWord || previousWords.current.has(newWord)) && attempts < 5) {
+
+      while ((!newWord || previousWords.current.has(newWord) || (lang === "es" && /[ÁÉÍÓÚ]/.test(newWord))) && attempts < 10) {
         const retryResp = await fetch(url);
         const retryData = await retryResp.json();
         newWord = retryData?.[0]?.word?.toUpperCase();
         attempts++;
       }
-      if (!newWord) newWord = lang === "es" ? "CASAS" : "APPLE";
+      
+      if (!newWord || (lang === "es" && /[ÁÉÍÓÚ]/.test(newWord))) {
+        newWord = lang === "es" ? "CASAS" : "APPLE";
+      }
       
       previousWords.current.add(newWord);
       setWord(newWord);
