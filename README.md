@@ -8,7 +8,7 @@ donde los jugadores adivinan una palabra oculta en intentos limitados.
 🚀 Características
 🌐 Bilingüe: Juega en inglés o español (¡fácil cambio con un botón!).
 
-📊 Estadísticas: Guarda tu progreso (victorias, rachas) localmente. (Próximamente)
+📊 Estadísticas: Guarda tu progreso (victorias, rachas) - (Próximamente)
 
 🎲 Palabras aleatorias: Descubre palabras ilimitadas.
 
@@ -27,4 +27,4 @@ Gris: Letra no presente en la palabra.
 Tienes 5 intentos. ¡Sé estratégico!
 
 🔗 Link al juego
-¡Prueba el juego aquí! 👉 []
+¡Prueba el juego aquí! 👉 [https://moonrise777.github.io/Wordy/]
