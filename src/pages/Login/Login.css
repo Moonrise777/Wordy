@@ -148,3 +148,27 @@ main {
   font-weight: bold;
   text-align: center;
 }
+/* ===== ESTILOS PARA MÓVIL ===== */
+@media (max-width: 480px) {
+  .lb-header a {
+    /* Reduce el espacio entre los botones */
+    margin: 0 10px;
+    padding: 0 8px;
+    font-size: 14px; /* Un poco más pequeño para que quepa mejor */
+  }
+
+  .lb-header .active {
+    font-size: 16px; /* Ajusta el tamaño del texto activo */
+  }
+
+  .u-form-group input[type="email"],
+  .u-form-group input[type="password"] {
+    /* inputs ocupen más ancho en pantallas pequeñas */
+    width: 80%;
+  }
+
+  .u-form-group button {
+    /* botón ocupa el mismo ancho que los inputs */
+    width: 80%;
+  }
+}
