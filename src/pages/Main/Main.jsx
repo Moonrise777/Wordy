@@ -142,41 +142,34 @@ const Main = ({ language }) => {
     }
   }, [currentRow, loadingWord]);
 
-  // ✅ **LÓGICA DE ESCRITURA MEJORADA**
+  // ✅ **LÓGICA DE ENTRADA Y BORRADO UNIFICADA PARA MÓVIL Y ESCRITORIO**
   const handleInputChange = (e, row, col) => {
-    const value = e.target.value.slice(-1).toUpperCase(); // Tomamos solo la última letra
-    
-    // Solo actualiza si es una letra válida
+    const newGrid = grid.map(r => [...r]);
+
+    // Si el valor del input está vacío, significa que el usuario borró.
+    if (e.target.value === "") {
+        newGrid[row][col] = "";
+        setGrid(newGrid);
+        if (col > 0) {
+            inputRefs.current[row][col - 1]?.focus();
+        }
+        return;
+    }
+
+    // Si el usuario escribió una letra.
+    const value = e.target.value.toUpperCase().slice(-1);
     if (/^[A-ZÑ]$/.test(value)) {
-      const newGrid = grid.map(r => [...r]);
       newGrid[row][col] = value;
       setGrid(newGrid);
-
-      // Mueve el foco al siguiente cuadro si no es el último
       if (col < 4) {
         inputRefs.current[row][col + 1]?.focus();
       }
     }
   };
-
-  // ✅ **LÓGICA DE BORRADO Y TECLAS ESPECIALES MEJORADA**
-  const handleKeyDown = (e, row, col) => {
-    if (e.key === "Backspace") {
-      // Prevenimos que el navegador retroceda de página
-      e.preventDefault();
-      const newGrid = grid.map(r => [...r]);
-
-      // Si el cuadro actual tiene una letra, la borramos y nos quedamos ahí
-      if (newGrid[row][col]) {
-        newGrid[row][col] = "";
-        setGrid(newGrid);
-      } 
-      // Si el cuadro ya está vacío, movemos el foco al anterior
-      else if (col > 0) {
-        inputRefs.current[row][col - 1]?.focus();
-      }
-    } 
-    else if (e.key === "Enter") {
+  
+  // Este handler es solo para teclas especiales como Enter.
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter") {
       handleSubmit();
     }
   };
@@ -213,37 +206,30 @@ const Main = ({ language }) => {
     setColors(newColors);
 
     // ✅ **LÓGICA DE ALERTAS CORREGIDA**
+    const showResultAlert = (result) => {
+        const isWin = result === 'win';
+        Swal.fire({
+            title: isWin ? (language === 'es' ? "¡Ganaste!" : "You won!") : (language === 'es' ? "Perdiste" : "You lost"),
+            text: language === 'es' ? `La palabra era ${word}` : `The word was ${word}`,
+            icon: isWin ? "success" : "error",
+            allowOutsideClick: true,
+            allowEscapeKey: true,
+            confirmButtonText: language === 'es' ? 'Jugar de nuevo' : 'Play Again',
+            confirmButtonColor: '#f9a8d4'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                fetchWord(language);
+            }
+        });
+    };
+
     if (guessWord === word) {
-      Swal.fire({
-        title: language === 'es' ? "¡Ganaste!" : "You won!",
-        text: language === 'es' ? `La palabra era ${word}` : `The word was ${word}`,
-        icon: "success",
-        allowOutsideClick: false, // No se cierra al hacer clic afuera
-        allowEscapeKey: false,   // No se cierra con la tecla Escape
-        confirmButtonText: language === 'es' ? 'Jugar de nuevo' : 'Play Again',
-        confirmButtonColor: '#f9a8d4'
-      }).then((result) => {
-        if (result.isConfirmed) {
-          fetchWord(language);
-        }
-      });
+      showResultAlert('win');
       return;
     }
 
     if (currentRow + 1 === maxAttempts) {
-      Swal.fire({
-        title: language === 'es' ? "Perdiste" : "You lost",
-        text: language === 'es' ? `La palabra era ${word}` : `The word was ${word}`,
-        icon: "error",
-        allowOutsideClick: false, // No se cierra al hacer clic afuera
-        allowEscapeKey: false,   // No se cierra con la tecla Escape
-        confirmButtonText: language === 'es' ? 'Intentar de nuevo' : 'Try Again',
-        confirmButtonColor: '#f9a8d4'
-      }).then((result) => {
-        if (result.isConfirmed) {
-          fetchWord(language);
-        }
-      });
+      showResultAlert('lose');
       return;
     }
 
