@@ -158,29 +158,19 @@ const Main = ({ language }) => {
     });
   };
 
-  // ✅ **CAMBIO PRINCIPAL AQUÍ**
-  const handleInput = (e) => {
-    const letter = e.target.value.slice(-1).toUpperCase();
-    if (/^[A-ZÑ]$/.test(letter)) {
-      addLetter(letter);
+  const handleKeyDown = (e) => {
+    if (loadingWord) return;
+    e.preventDefault(); // Previene comportamiento por defecto del teclado
+
+    if (e.key === "Enter") {
+      handleSubmit();
+    } else if (e.key === "Backspace") {
+      removeLetter();
+    } else if (/^[a-zA-ZñÑ]$/.test(e.key)) {
+      addLetter(e.key.toUpperCase());
     }
-    // Limpia el input inmediatamente para que esté listo para la siguiente letra
-    e.target.value = "";
   };
 
-  useEffect(() => {
-    const handleKeyDown = (e) => {
-      if (loadingWord) return;
-      if (e.key === "Enter") {
-        handleSubmit();
-      } else if (e.key === "Backspace") {
-        removeLetter();
-      }
-    };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [grid, currentRow, word, loadingWord, language]);
-  
   const focusInput = () => {
     hiddenInputRef.current?.focus();
   };
@@ -210,7 +200,7 @@ const Main = ({ language }) => {
   };
 
   const getLetterColor = (letter, index, rowIndex) => {
-    if (rowIndex >= currentRow || !letter) return "transparent";
+    if (rowIndex > currentRow || !letter) return "transparent";
     if (word[index] === letter) return "green";
     if (word.includes(letter)) return "goldenrod";
     return "crimson";
@@ -220,9 +210,9 @@ const Main = ({ language }) => {
     <div className="wordle-container" onClick={focusInput}>
       <input
         ref={hiddenInputRef}
-        onInput={handleInput} // ✅ **CAMBIO PRINCIPAL AQUÍ**
+        onKeyDown={handleKeyDown} // ✅ CAMBIO PRINCIPAL: Usamos onKeyDown para todo
         type="text"
-        style={{ position: 'absolute', top: '-9999px', left: '-9999px', opacity: 0 }}
+        style={{ position: 'absolute', opacity: 0, top: '-9999px', left: '-9999px' }}
         autoComplete="off"
         autoCorrect="off"
         autoCapitalize="off"
@@ -238,7 +228,7 @@ const Main = ({ language }) => {
                 {row.map((letter, colIndex) => (
                   <div
                     key={colIndex}
-                    className={`guess-cell ${rowIndex === currentRow && !grid[currentRow][colIndex] ? "active" : "inactive"}`}
+                    className={`guess-cell ${rowIndex === currentRow ? "active" : "inactive"}`}
                     style={{ backgroundColor: getLetterColor(letter, colIndex, rowIndex) }}
                   >
                     {letter}
