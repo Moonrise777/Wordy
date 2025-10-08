@@ -16,7 +16,7 @@ const Main = ({ language }) => {
   const inputRefs = useRef(Array(maxAttempts).fill(null).map(() => Array(5).fill(null)));
 
   const showTutorial = () => {
-    const tutorialText = language === 'es' 
+    const tutorialText = language === 'es'
       ? `
         <div style="text-align: left;">
           <div style="text-align: center; margin-bottom: 5px;">
@@ -138,55 +138,38 @@ const Main = ({ language }) => {
 
   useEffect(() => {
     if (!loadingWord && currentRow < maxAttempts) {
-      // Enfoca la primera celda vacía de la fila actual, o la última si está llena.
-      const firstEmpty = grid[currentRow].findIndex(cell => cell === "");
-      const focusIndex = firstEmpty === -1 ? 4 : firstEmpty;
-      inputRefs.current[currentRow][focusIndex]?.focus();
+      inputRefs.current[currentRow][0]?.focus();
     }
   }, [currentRow, loadingWord]);
 
-  // Maneja escritura de letras y salto automático
-const handleInputChange = (e, row, col) => {
-  const value = e.target.value.toUpperCase();
-
-  if (!value) return;
-
-  if (/^[A-ZÑ]$/.test(value)) {
+  const handleInputChange = (e, row, col) => {
+    const value = e.target.value.toUpperCase();
     const newGrid = grid.map(r => [...r]);
-    newGrid[row][col] = value;
-    setGrid(newGrid);
+    newGrid[row][col] = ""; // Limpia el valor actual primero
 
-    // Si no es la última celda, avanza
-    if (col < 4) {
-      inputRefs.current[row][col + 1]?.focus();
-    } else {
-      // Si está en la última, se queda ahí
-      inputRefs.current[row][col]?.blur(); // quita foco si quieres evitar escribir más
-    }
-  }
-};
-
-// Maneja Backspace y Enter
-const handleKeyDown = (e, row, col) => {
-  if (e.key === "Backspace") {
-    e.preventDefault();
-    const newGrid = grid.map(r => [...r]);
-
-    if (newGrid[row][col] !== "") {
-      newGrid[row][col] = "";
+    if (value) { // Si el usuario escribió una letra
+      newGrid[row][col] = value.slice(-1); // Toma solo la última letra
       setGrid(newGrid);
-    } else if (col > 0) {
-      // Mueve foco a la celda anterior
-      inputRefs.current[row][col - 1]?.focus();
-      const updatedGrid = grid.map(r => [...r]);
-      updatedGrid[row][col - 1] = "";
-      setGrid(updatedGrid);
+      if (col < 4) {
+        inputRefs.current[row][col + 1]?.focus();
+      }
+    } else { // Si el usuario borró la letra
+      setGrid(newGrid);
+      if (col > 0) {
+        inputRefs.current[row][col - 1]?.focus();
+      }
     }
-  } else if (e.key === "Enter") {
-    handleSubmit();
-  }
-};
+  };
 
+  const handleKeyDown = (e, row, col) => {
+    if (e.key === "Backspace" && !grid[row][col]) {
+        if (col > 0) {
+            inputRefs.current[row][col - 1]?.focus();
+        }
+    } else if (e.key === "Enter") {
+      handleSubmit();
+    }
+  };
 
   const handleSubmit = () => {
     if (loadingWord || currentRow >= maxAttempts) return;
@@ -215,41 +198,35 @@ const handleKeyDown = (e, row, col) => {
         wordLetters[wordLetters.indexOf(letter)] = null;
       }
     });
-    
+
     newColors[currentRow] = rowColors;
     setColors(newColors);
-    
-   const showResultAlert = (result) => {
-  const isWin = result === 'win';
-  Swal.fire({
-    title: isWin
-      ? (language === 'es' ? "¡Ganaste!" : "You won!")
-      : (language === 'es' ? "Perdiste" : "You lost"),
-    text: language === 'es'
-      ? `La palabra era ${word}`
-      : `The word was ${word}`,
-    icon: isWin ? "success" : "error",
-    confirmButtonText: language === 'es' ? 'Jugar de nuevo' : 'Play Again',
-    confirmButtonColor: '#f9a8d4',
-    allowOutsideClick: false, // No se cierra clic fuera
-    allowEscapeKey: false,   // No se cierra con Escape
-    allowEnterKey: false,    // No se cierra con Enter
-    timer: undefined         // Sin límite de tiempo
-  }).then((result) => {
-    if (result.isConfirmed) {
-      fetchWord(language);
-    }
-  });
-};
-
 
     if (guessWord === word) {
-      showResultAlert('win');
+      Swal.fire({
+        title: language === 'es' ? "¡Ganaste!" : "You won!",
+        text: language === 'es' ? `La palabra era ${word}` : `The word was ${word}`,
+        icon: "success",
+        // ✅ Ajustes clave:
+        allowOutsideClick: true, // Permite cerrar haciendo clic afuera
+        allowEscapeKey: true,    // Permite cerrar con la tecla Escape
+        confirmButtonText: language === 'es' ? 'Jugar de nuevo' : 'Play Again',
+        confirmButtonColor: '#f9a8d4'
+      }).then(() => fetchWord(language));
       return;
     }
 
     if (currentRow + 1 === maxAttempts) {
-      showResultAlert('lose');
+      Swal.fire({
+        title: language === 'es' ? "Perdiste" : "You lost",
+        text: language === 'es' ? `La palabra era ${word}` : `The word was ${word}`,
+        icon: "error",
+        // ✅ Ajustes clave:
+        allowOutsideClick: true, // Permite cerrar haciendo clic afuera
+        allowEscapeKey: true,    // Permite cerrar con la tecla Escape
+        confirmButtonText: language === 'es' ? 'Intentar de nuevo' : 'Try Again',
+        confirmButtonColor: '#f9a8d4'
+      }).then(() => fetchWord(language));
       return;
     }
 
