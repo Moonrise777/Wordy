@@ -12,8 +12,8 @@ const Main = ({ language }) => {
   const [currentRow, setCurrentRow] = useState(0);
   const previousWords = useRef(new Set());
   const maxAttempts = 5;
+  const hiddenInputRef = useRef(null);
 
-  // Mostrar tutorial en primera visita
   useEffect(() => {
     const hasSeenTutorial = localStorage.getItem('wordyTutorialSeen');
     if (!hasSeenTutorial) {
@@ -29,13 +29,11 @@ const Main = ({ language }) => {
           <div style="text-align: center; margin-bottom: 5px;">
              <img src="${IconWordy}" alt="Wordy" style="display: block; margin: auto; width: 100px; height: 100px;" />
           </div>
-
           <div style="text-align: center; margin-bottom: 20px;">
             <h1 style="font-family: 'Bagel Fat One', cursive; font-size: 52px; color: #000; margin: 0; font-weight: normal; line-height: 1.2;">
               Wordy
             </h1>
           </div>
-
           <h3 style="color: #f9a8d4; margin-bottom: 15px;">¿Cómo jugar Wordy?</h3>
           <p><strong>🎯 Objetivo:</strong> Adivina la palabra secreta de 5 letras en 5 intentos</p>
           <br>
@@ -60,13 +58,11 @@ const Main = ({ language }) => {
           <div style="text-align: center; margin-bottom: 5px;">
              <img src="${IconWordy}" alt="Wordy" style="display: block; margin: auto; width: 100px; height: 100px;" />
           </div>
-
           <div style="text-align: center; margin-bottom: 20px;">
             <h1 style="font-family: 'Bagel Fat One', cursive; font-size: 52px; color: #000; margin: 0; font-weight: normal; line-height: 1.2;">
               Wordy
             </h1>
           </div>
-
           <h3 style="color: #f9a8d4; margin-bottom: 15px;">How to play Wordy?</h3>
           <p><strong>🎯 Goal:</strong> Guess the secret 5-letter word in 5 attempts</p>
           <br>
@@ -96,7 +92,6 @@ const Main = ({ language }) => {
     });
   };
 
-  // Exponer función para que Navbar pueda llamarla
   useEffect(() => {
     window.showWordyTutorial = showTutorial;
     return () => {
@@ -153,7 +148,6 @@ const Main = ({ language }) => {
 
   useEffect(() => {
     fetchWord(language);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [language]);
 
   useEffect(() => {
@@ -168,9 +162,26 @@ const Main = ({ language }) => {
         removeLetter();
       }
     };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
+    
+    const inputElement = hiddenInputRef.current;
+    if (inputElement) {
+        inputElement.addEventListener("keydown", handleKeyDown);
+    }
+
+    return () => {
+        if (inputElement) {
+            inputElement.removeEventListener("keydown", handleKeyDown);
+        }
+    };
   });
+
+  const focusInput = () => {
+    hiddenInputRef.current?.focus();
+  };
+
+  useEffect(() => {
+    focusInput();
+  }, [loadingWord]);
 
   const addLetter = (letter) => {
     setGrid((prev) => {
@@ -242,9 +253,24 @@ const Main = ({ language }) => {
     if (word.includes(letter)) return "goldenrod";
     return "crimson";
   };
-
+  
   return (
-    <div className="wordle-container">
+    <div className="wordle-container" onClick={focusInput}>
+      <input
+        ref={hiddenInputRef}
+        type="text"
+        style={{
+          position: 'absolute',
+          top: '-9999px',
+          left: '-9999px',
+          opacity: 0,
+        }}
+        autoComplete="off"
+        autoCorrect="off"
+        autoCapitalize="off"
+        spellCheck="false"
+      />
+
       {loadingWord ? (
         <p>{language === 'es' ? 'Cargando palabra...' : 'Loading word...'}</p>
       ) : (
