@@ -203,12 +203,30 @@ const Main = ({ language }) => {
     setColors(newColors);
 
     if (guessWord === word) {
-      Swal.fire({ title: language === 'es' ? "¡Ganaste!" : "You won!", text: language === 'es' ? `La palabra era ${word}` : `The word was ${word}`, icon: "success" }).then(() => fetchWord(language));
+      Swal.fire({
+        title: language === 'es' ? "¡Ganaste!" : "You won!",
+        text: language === 'es' ? `La palabra era ${word}` : `The word was ${word}`,
+        icon: "success",
+        // ✅ Ajustes clave:
+        allowOutsideClick: true, // Permite cerrar haciendo clic afuera
+        allowEscapeKey: true,    // Permite cerrar con la tecla Escape
+        confirmButtonText: language === 'es' ? 'Jugar de nuevo' : 'Play Again',
+        confirmButtonColor: '#f9a8d4'
+      }).then(() => fetchWord(language));
       return;
     }
 
     if (currentRow + 1 === maxAttempts) {
-      Swal.fire({ title: language === 'es' ? "Perdiste" : "You lost", text: language === 'es' ? `La palabra era ${word}` : `The word was ${word}`, icon: "error" }).then(() => fetchWord(language));
+      Swal.fire({
+        title: language === 'es' ? "Perdiste" : "You lost",
+        text: language === 'es' ? `La palabra era ${word}` : `The word was ${word}`,
+        icon: "error",
+        // ✅ Ajustes clave:
+        allowOutsideClick: true, // Permite cerrar haciendo clic afuera
+        allowEscapeKey: true,    // Permite cerrar con la tecla Escape
+        confirmButtonText: language === 'es' ? 'Intentar de nuevo' : 'Try Again',
+        confirmButtonColor: '#f9a8d4'
+      }).then(() => fetchWord(language));
       return;
     }
 
