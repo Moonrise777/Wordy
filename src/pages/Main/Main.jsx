@@ -179,34 +179,27 @@ const Main = ({ language }) => {
       return;
     }
 
-    const rowColors = Array(5).fill('transparent');
+    const rowColors = Array(5).fill('crimson'); // ✅ Letras incorrectas son rojas por defecto
     const guessLetters = guessWord.split('');
     const wordLetters = word.split('');
     const letterStatus = {};
 
     guessLetters.forEach((letter, index) => {
       if (wordLetters[index] === letter) {
-        rowColors[index] = '#6aaa64';
+        rowColors[index] = '#6aaa64'; // Verde
         letterStatus[letter] = 'correct';
         wordLetters[index] = null;
       }
     });
 
     guessLetters.forEach((letter, index) => {
-      if (rowColors[index] === 'transparent' && wordLetters.includes(letter)) {
-        rowColors[index] = '#c9b458';
+      if (rowColors[index] !== '#6aaa64' && wordLetters.includes(letter)) {
+        rowColors[index] = '#c9b458'; // Amarillo
         if (letterStatus[letter] !== 'correct') letterStatus[letter] = 'present';
         wordLetters[wordLetters.indexOf(letter)] = null;
       }
     });
     
-    guessLetters.forEach((letter, index) => {
-      if (rowColors[index] === 'transparent') {
-        rowColors[index] = '#787c7e';
-        if (!letterStatus[letter]) letterStatus[letter] = 'absent';
-      }
-    });
-
     setColors(prevColors => {
       const newColorsState = [...prevColors];
       newColorsState[currentRow] = rowColors;
@@ -215,6 +208,11 @@ const Main = ({ language }) => {
 
     setKeyColors(prevKeyColors => {
       const updatedKeyColors = { ...prevKeyColors };
+      guessLetters.forEach(letter => {
+        if (!word.includes(letter) && !updatedKeyColors[letter]) {
+          updatedKeyColors[letter] = 'absent'; // Gris para el teclado
+        }
+      });
       Object.keys(letterStatus).forEach(letter => {
         if (updatedKeyColors[letter] !== 'correct') {
           updatedKeyColors[letter] = letterStatus[letter];
@@ -230,7 +228,7 @@ const Main = ({ language }) => {
           title: isWin ? (language === 'es' ? "¡Ganaste!" : "You won!") : (language === 'es' ? "Perdiste" : "You lost"),
           text: language === 'es' ? `La palabra era ${word}` : `The word was ${word}`,
           icon: isWin ? "success" : "error",
-          allowOutsideClick: true,
+          allowOutsideClick: false,
           allowEscapeKey: false,
           confirmButtonText: language === 'es' ? 'Jugar de nuevo' : 'Play Again',
           confirmButtonColor: '#f9a8d4'
@@ -239,7 +237,7 @@ const Main = ({ language }) => {
             fetchWord(language);
           }
         });
-      }, 500); // Pequeño delay para que la alerta no se sienta abrupta
+      }, 500);
       return;
     }
     setCurrentRow((r) => r + 1);
@@ -247,7 +245,6 @@ const Main = ({ language }) => {
 
   const handleKeyPress = useCallback((key) => {
     if (currentRow >= maxAttempts || loadingWord) return;
-
     if (key === 'ENTER') {
       handleSubmit();
     } else if (key === 'BACKSPACE') {
@@ -293,11 +290,11 @@ const Main = ({ language }) => {
         <>
           <div className="board">
             {grid.map((row, rowIndex) => (
-              <div key={rowIndex} className="guess-row">
+              <div key={rowIndex} className={`guess-row ${rowIndex === currentRow ? 'active-row' : ''}`}>
                 {row.map((letter, colIndex) => (
                   <div
                     key={colIndex}
-                    className={`guess-cell ${rowIndex === currentRow ? 'active-row' : ''}`}
+                    className="guess-cell"
                     style={{ 
                       backgroundColor: colors[rowIndex][colIndex],
                       borderColor: colors[rowIndex][colIndex] !== 'transparent' ? 'transparent' : ''

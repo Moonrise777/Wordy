@@ -3,8 +3,8 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding-bottom: 20px; /* Espacio para el teclado */
-  min-height: calc(100vh - 140px); /* Header footer */
+  padding-bottom: 20px;
+  min-height: calc(100vh - 140px);
 }
 
 .board {
@@ -23,7 +23,7 @@
 .guess-cell {
   width: clamp(3rem, 12vw, 4rem);
   height: clamp(3rem, 12vw, 4rem);
-  border: 2px solid #d3d6da; /* Borde gris por defecto */
+  border: 2px solid #d3d6da;
   border-radius: 4px;
   text-align: center;
   font-size: clamp(1.5rem, 5vw, 2rem);
@@ -34,17 +34,15 @@
   align-items: center;
   transition: all 0.2s ease;
   color: var(--text-primary);
-  /* El color de fondo es controlado por el estado 'colors' en React */
   background-color: transparent;
 }
 
 /* ✅ ESTILO PARA LA FILA ACTIVA */
-/* Todas las celdas dentro de la fila activa tendrán un borde rosa */
 .active-row .guess-cell {
   border-color: #f9a8d4;
+  box-shadow: 0 0 0 2px rgba(249, 168, 212, 0.4);
 }
 
-/* Estilos para el teclado virtual */
 .keyboard {
   margin-top: 1rem;
   display: flex;
@@ -90,16 +88,15 @@
   font-size: 12px;
 }
 
-/* Colores de las teclas según su estado (esto está bien en gris) */
 .key.correct {
-  background-color: #6aaa64; /* Verde */
+  background-color: #6aaa64;
   color: white;
 }
 .key.present {
-  background-color: #c9b458; /* Amarillo */
+  background-color: #c9b458;
   color: white;
 }
 .key.absent {
-  background-color: #787c7e; /* Gris */
+  background-color: #787c7e;
   color: white;
 }
