@@ -142,31 +142,41 @@ const Main = ({ language }) => {
     }
   }, [currentRow, loadingWord]);
 
+  // ✅ **LÓGICA DE ESCRITURA MEJORADA**
   const handleInputChange = (e, row, col) => {
-    const value = e.target.value.toUpperCase();
-    const newGrid = grid.map(r => [...r]);
-    newGrid[row][col] = ""; // Limpia el valor actual primero
-
-    if (value) { // Si el usuario escribió una letra
-      newGrid[row][col] = value.slice(-1); // Toma solo la última letra
+    const value = e.target.value.slice(-1).toUpperCase(); // Tomamos solo la última letra
+    
+    // Solo actualiza si es una letra válida
+    if (/^[A-ZÑ]$/.test(value)) {
+      const newGrid = grid.map(r => [...r]);
+      newGrid[row][col] = value;
       setGrid(newGrid);
+
+      // Mueve el foco al siguiente cuadro si no es el último
       if (col < 4) {
         inputRefs.current[row][col + 1]?.focus();
-      }
-    } else { // Si el usuario borró la letra
-      setGrid(newGrid);
-      if (col > 0) {
-        inputRefs.current[row][col - 1]?.focus();
       }
     }
   };
 
+  // ✅ **LÓGICA DE BORRADO Y TECLAS ESPECIALES MEJORADA**
   const handleKeyDown = (e, row, col) => {
-    if (e.key === "Backspace" && !grid[row][col]) {
-        if (col > 0) {
-            inputRefs.current[row][col - 1]?.focus();
-        }
-    } else if (e.key === "Enter") {
+    if (e.key === "Backspace") {
+      // Prevenimos que el navegador retroceda de página
+      e.preventDefault();
+      const newGrid = grid.map(r => [...r]);
+
+      // Si el cuadro actual tiene una letra, la borramos y nos quedamos ahí
+      if (newGrid[row][col]) {
+        newGrid[row][col] = "";
+        setGrid(newGrid);
+      } 
+      // Si el cuadro ya está vacío, movemos el foco al anterior
+      else if (col > 0) {
+        inputRefs.current[row][col - 1]?.focus();
+      }
+    } 
+    else if (e.key === "Enter") {
       handleSubmit();
     }
   };
@@ -202,17 +212,21 @@ const Main = ({ language }) => {
     newColors[currentRow] = rowColors;
     setColors(newColors);
 
+    // ✅ **LÓGICA DE ALERTAS CORREGIDA**
     if (guessWord === word) {
       Swal.fire({
         title: language === 'es' ? "¡Ganaste!" : "You won!",
         text: language === 'es' ? `La palabra era ${word}` : `The word was ${word}`,
         icon: "success",
-        // ✅ Ajustes clave:
-        allowOutsideClick: true, // Permite cerrar haciendo clic afuera
-        allowEscapeKey: true,    // Permite cerrar con la tecla Escape
+        allowOutsideClick: false, // No se cierra al hacer clic afuera
+        allowEscapeKey: false,   // No se cierra con la tecla Escape
         confirmButtonText: language === 'es' ? 'Jugar de nuevo' : 'Play Again',
         confirmButtonColor: '#f9a8d4'
-      }).then(() => fetchWord(language));
+      }).then((result) => {
+        if (result.isConfirmed) {
+          fetchWord(language);
+        }
+      });
       return;
     }
 
@@ -221,12 +235,15 @@ const Main = ({ language }) => {
         title: language === 'es' ? "Perdiste" : "You lost",
         text: language === 'es' ? `La palabra era ${word}` : `The word was ${word}`,
         icon: "error",
-        // ✅ Ajustes clave:
-        allowOutsideClick: true, // Permite cerrar haciendo clic afuera
-        allowEscapeKey: true,    // Permite cerrar con la tecla Escape
+        allowOutsideClick: false, // No se cierra al hacer clic afuera
+        allowEscapeKey: false,   // No se cierra con la tecla Escape
         confirmButtonText: language === 'es' ? 'Intentar de nuevo' : 'Try Again',
         confirmButtonColor: '#f9a8d4'
-      }).then(() => fetchWord(language));
+      }).then((result) => {
+        if (result.isConfirmed) {
+          fetchWord(language);
+        }
+      });
       return;
     }
 
