@@ -145,44 +145,48 @@ const Main = ({ language }) => {
     }
   }, [currentRow, loadingWord]);
 
-  // ✅ **LÓGICA DE ENTRADA UNIFICADA**
-  const handleInputChange = (e, row, col) => {
-    const value = e.target.value.toUpperCase();
-    
-    // Si el valor está vacío, es una acción de borrado (manejada en onKeyDown)
-    if (value === "") {
-        return;
+  // Maneja escritura de letras y salto automático
+const handleInputChange = (e, row, col) => {
+  const value = e.target.value.toUpperCase();
+
+  if (!value) return;
+
+  if (/^[A-ZÑ]$/.test(value)) {
+    const newGrid = grid.map(r => [...r]);
+    newGrid[row][col] = value;
+    setGrid(newGrid);
+
+    // Si no es la última celda, avanza
+    if (col < 4) {
+      inputRefs.current[row][col + 1]?.focus();
+    } else {
+      // Si está en la última, se queda ahí
+      inputRefs.current[row][col]?.blur(); // quita foco si quieres evitar escribir más
     }
-    
-    // Si es una letra, la añade y avanza
-    if (/^[A-ZÑ]$/.test(value)) {
-      const newGrid = grid.map(r => [...r]);
-      newGrid[row][col] = value;
+  }
+};
+
+// Maneja Backspace y Enter
+const handleKeyDown = (e, row, col) => {
+  if (e.key === "Backspace") {
+    e.preventDefault();
+    const newGrid = grid.map(r => [...r]);
+
+    if (newGrid[row][col] !== "") {
+      newGrid[row][col] = "";
       setGrid(newGrid);
-
-      if (col < 4) {
-        inputRefs.current[row][col + 1]?.focus();
-      }
+    } else if (col > 0) {
+      // Mueve foco a la celda anterior
+      inputRefs.current[row][col - 1]?.focus();
+      const updatedGrid = grid.map(r => [...r]);
+      updatedGrid[row][col - 1] = "";
+      setGrid(updatedGrid);
     }
-  };
-  
-  // ✅ **LÓGICA DE TECLAS ESPECIALES (INCLUYE BORRADO)**
-  const handleKeyDown = (e, row, col) => {
-    if (e.key === "Backspace") {
-      e.preventDefault();
-      const newGrid = grid.map(r => [...r]);
+  } else if (e.key === "Enter") {
+    handleSubmit();
+  }
+};
 
-      if (newGrid[row][col]) {
-        newGrid[row][col] = "";
-        setGrid(newGrid);
-      } else if (col > 0) {
-        inputRefs.current[row][col - 1]?.focus();
-      }
-    } 
-    else if (e.key === "Enter") {
-      handleSubmit();
-    }
-  };
 
   const handleSubmit = () => {
     if (loadingWord || currentRow >= maxAttempts) return;
@@ -215,22 +219,29 @@ const Main = ({ language }) => {
     newColors[currentRow] = rowColors;
     setColors(newColors);
     
-    const showResultAlert = (result) => {
-        const isWin = result === 'win';
-        Swal.fire({
-            title: isWin ? (language === 'es' ? "¡Ganaste!" : "You won!") : (language === 'es' ? "Perdiste" : "You lost"),
-            text: language === 'es' ? `La palabra era ${word}` : `The word was ${word}`,
-            icon: isWin ? "success" : "error",
-            allowOutsideClick: true,
-            allowEscapeKey: true,
-            confirmButtonText: language === 'es' ? 'Jugar de nuevo' : 'Play Again',
-            confirmButtonColor: '#f9a8d4'
-        }).then((result) => {
-            if (result.isConfirmed || result.isDismissed) {
-                fetchWord(language);
-            }
-        });
-    };
+   const showResultAlert = (result) => {
+  const isWin = result === 'win';
+  Swal.fire({
+    title: isWin
+      ? (language === 'es' ? "¡Ganaste!" : "You won!")
+      : (language === 'es' ? "Perdiste" : "You lost"),
+    text: language === 'es'
+      ? `La palabra era ${word}`
+      : `The word was ${word}`,
+    icon: isWin ? "success" : "error",
+    confirmButtonText: language === 'es' ? 'Jugar de nuevo' : 'Play Again',
+    confirmButtonColor: '#f9a8d4',
+    allowOutsideClick: false, // No se cierra clic fuera
+    allowEscapeKey: false,   // No se cierra con Escape
+    allowEnterKey: false,    // No se cierra con Enter
+    timer: undefined         // Sin límite de tiempo
+  }).then((result) => {
+    if (result.isConfirmed) {
+      fetchWord(language);
+    }
+  });
+};
+
 
     if (guessWord === word) {
       showResultAlert('win');
