@@ -143,35 +143,29 @@ const Main = ({ language }) => {
   }, [currentRow, loadingWord]);
 
   const handleInputChange = (e, row, col) => {
-    const value = e.target.value.toUpperCase().slice(-1);
+    const value = e.target.value.toUpperCase();
+    const newGrid = grid.map(r => [...r]);
+    newGrid[row][col] = ""; // Limpia el valor actual primero
 
-    if (/^[A-ZÑ]$/.test(value)) {
-      const newGrid = grid.map((r, rIdx) => {
-        if (rIdx === row) {
-          const newRow = [...r];
-          newRow[col] = value;
-          return newRow;
-        }
-        return r;
-      });
+    if (value) { // Si el usuario escribió una letra
+      newGrid[row][col] = value.slice(-1); // Toma solo la última letra
       setGrid(newGrid);
-
       if (col < 4) {
         inputRefs.current[row][col + 1]?.focus();
+      }
+    } else { // Si el usuario borró la letra
+      setGrid(newGrid);
+      if (col > 0) {
+        inputRefs.current[row][col - 1]?.focus();
       }
     }
   };
 
   const handleKeyDown = (e, row, col) => {
-    if (e.key === "Backspace") {
-      const newGrid = grid.map(r => [...r]);
-      if (newGrid[row][col]) {
-        newGrid[row][col] = "";
-      } else if (col > 0) {
-        inputRefs.current[row][col - 1]?.focus();
-        newGrid[row][col - 1] = "";
-      }
-      setGrid(newGrid);
+    if (e.key === "Backspace" && !grid[row][col]) {
+        if (col > 0) {
+            inputRefs.current[row][col - 1]?.focus();
+        }
     } else if (e.key === "Enter") {
       handleSubmit();
     }
