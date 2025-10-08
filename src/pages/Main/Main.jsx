@@ -12,7 +12,7 @@ const Main = ({ language }) => {
   const [currentRow, setCurrentRow] = useState(0);
   const previousWords = useRef(new Set());
   const maxAttempts = 5;
-  const hiddenInputRef = useRef(null);
+  const inputRefs = useRef(Array(maxAttempts).fill(null).map(() => Array(5).fill(null)));
 
   const showTutorial = () => {
     const tutorialText = language === 'es' 
@@ -125,8 +125,6 @@ const Main = ({ language }) => {
     } catch (err) {
       console.error("Error al obtener palabra:", err);
       setWord(lang === "es" ? "MASAS" : "APPLE");
-      setGrid(Array(5).fill(Array(5).fill("")));
-      setCurrentRow(0);
     } finally {
       setLoadingWord(false);
     }
@@ -136,88 +134,68 @@ const Main = ({ language }) => {
     fetchWord(language);
   }, [language]);
 
-  const addLetter = (letter) => {
-    setGrid((prev) => {
-      const newGrid = prev.map((r) => [...r]);
-      if (currentRow < maxAttempts) {
-        const idx = newGrid[currentRow].findIndex((l) => l === "");
-        if (idx !== -1) newGrid[currentRow][idx] = letter;
-      }
-      return newGrid;
-    });
-  };
-
-  const removeLetter = () => {
-    setGrid((prev) => {
-      const newGrid = prev.map((r) => [...r]);
-      if (currentRow < maxAttempts) {
-        const idx = newGrid[currentRow].findLastIndex((l) => l !== "");
-        if (idx !== -1) newGrid[currentRow][idx] = "";
-      }
-      return newGrid;
-    });
-  };
-
-  const handleKeyDown = (e) => {
-    if (loadingWord) return;
-    e.preventDefault(); // Previene comportamiento por defecto del teclado
-
-    if (e.key === "Enter") {
-      handleSubmit();
-    } else if (e.key === "Backspace") {
-      removeLetter();
-    } else if (/^[a-zA-ZñÑ]$/.test(e.key)) {
-      addLetter(e.key.toUpperCase());
-    }
-  };
-
-  const focusInput = () => {
-    hiddenInputRef.current?.focus();
-  };
-
   useEffect(() => {
     if (!loadingWord) {
-      focusInput();
+      inputRefs.current[currentRow][0]?.focus();
     }
-  }, [loadingWord]);
+  }, [currentRow, loadingWord]);
+
+  const handleInputChange = (e, row, col) => {
+    const value = e.target.value.toUpperCase();
+
+    if (/^[A-ZÑ]$/.test(value)) {
+      const newGrid = grid.map(r => [...r]);
+      newGrid[row][col] = value;
+      setGrid(newGrid);
+
+      if (col < 4) {
+        inputRefs.current[row][col + 1]?.focus();
+      }
+    }
+  };
+
+  const handleKeyDown = (e, row, col) => {
+    if (e.key === "Backspace" && grid[row][col] === "") {
+      if (col > 0) {
+        inputRefs.current[row][col - 1]?.focus();
+      }
+    }
+    else if (e.key === "Enter") {
+      handleSubmit();
+    }
+  };
 
   const handleSubmit = () => {
     if (loadingWord) return;
     const guessWord = grid[currentRow].join("");
+
     if (guessWord.length < 5) {
-      Swal.fire({ toast: true, position: "top-end", icon: "warning", title: language === 'es' ? "La palabra debe tener 5 letras" : "Word must have 5 letters", showConfirmButton: false, timer: 2000, timerProgressBar: true });
+      Swal.fire({ toast: true, position: "top-end", icon: "warning", title: language === 'es' ? "La palabra debe tener 5 letras" : "Word must have 5 letters", showConfirmButton: false, timer: 2000 });
       return;
     }
+
     if (guessWord === word) {
-      Swal.fire({ title: language === 'es' ? "¡Ganaste!" : "You won!", text: language === 'es' ? `La palabra era ${word}` : `The word was ${word}`, icon: "success", allowOutsideClick: true, confirmButtonColor: '#f9a8d4' }).then(() => fetchWord(language));
+      Swal.fire({ title: language === 'es' ? "¡Ganaste!" : "You won!", text: language === 'es' ? `La palabra era ${word}` : `The word was ${word}`, icon: "success" }).then(() => fetchWord(language));
       return;
     }
+
     if (currentRow + 1 === maxAttempts) {
-      Swal.fire({ title: language === 'es' ? "Perdiste" : "You lost", text: language === 'es' ? `La palabra era ${word}` : `The word was ${word}`, icon: "error", allowOutsideClick: true, confirmButtonColor: '#f9a8d4' }).then(() => fetchWord(language));
+      Swal.fire({ title: language === 'es' ? "Perdiste" : "You lost", text: language === 'es' ? `La palabra era ${word}` : `The word was ${word}`, icon: "error" }).then(() => fetchWord(language));
       return;
     }
+
     setCurrentRow((r) => r + 1);
   };
 
   const getLetterColor = (letter, index, rowIndex) => {
-    if (rowIndex > currentRow || !letter) return "transparent";
+    if (rowIndex >= currentRow || !letter) return "transparent";
     if (word[index] === letter) return "green";
     if (word.includes(letter)) return "goldenrod";
     return "crimson";
   };
 
   return (
-    <div className="wordle-container" onClick={focusInput}>
-      <input
-        ref={hiddenInputRef}
-        onKeyDown={handleKeyDown} // ✅ CAMBIO PRINCIPAL: Usamos onKeyDown para todo
-        type="text"
-        style={{ position: 'absolute', opacity: 0, top: '-9999px', left: '-9999px' }}
-        autoComplete="off"
-        autoCorrect="off"
-        autoCapitalize="off"
-        spellCheck="false"
-      />
+    <div className="wordle-container">
       {loadingWord ? (
         <p>{language === 'es' ? 'Cargando palabra...' : 'Loading word...'}</p>
       ) : (
@@ -226,17 +204,25 @@ const Main = ({ language }) => {
             {grid.map((row, rowIndex) => (
               <div key={rowIndex} className="guess-row">
                 {row.map((letter, colIndex) => (
-                  <div
+                  <input
                     key={colIndex}
-                    className={`guess-cell ${rowIndex === currentRow ? "active" : "inactive"}`}
-                    style={{ backgroundColor: getLetterColor(letter, colIndex, rowIndex) }}
-                  >
-                    {letter}
-                  </div>
+                    ref={(el) => (inputRefs.current[rowIndex][colIndex] = el)}
+                    type="text"
+                    maxLength="1"
+                    value={letter}
+                    className="guess-cell"
+                    style={{
+                      backgroundColor: getLetterColor(letter, colIndex, rowIndex),
+                    }}
+                    disabled={rowIndex !== currentRow}
+                    onChange={(e) => handleInputChange(e, rowIndex, colIndex)}
+                    onKeyDown={(e) => handleKeyDown(e, rowIndex, colIndex)}
+                  />
                 ))}
               </div>
             ))}
           </div>
+
           <button onClick={handleSubmit} className="submit-btn">
             {language === 'es' ? 'Enviar' : 'Submit'}
           </button>
