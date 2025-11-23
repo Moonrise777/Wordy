@@ -5,19 +5,22 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Tema claro por defecto (modo día) */
+/* --- TEMA CLARO (Modo Día) --- */
 :root {
-  --bg-image: url('./assets/fondo.jpg');
+  /* Gradiente día */
+  --bg-gradient: linear-gradient(135deg, #f28ec1 0%, #f350d0 40%, #97faff 100%);
   --text-primary: #000000;
   --text-secondary: #d2d2d2;
-  --bg-secondary: #ffffff; /* Usado para el fondo del autofill */
+  --bg-secondary: #ffffff; 
 }
 
+/* --- TEMA OSCURO (Modo Noche) --- */
 body.dark-theme {
-  --bg-image: url('./assets/fondoDark.jpg'); 
+  /* Gradiente noche */
+  --bg-gradient: linear-gradient(135deg, #c85268 0%, #8B6868 40%, #339ea6 100%);
   --text-primary: #ffffff;
   --text-secondary: #cccccc;
-  --bg-secondary: #333333; /* Usado para el fondo del autofill */
+  --bg-secondary: #333333; 
 }
 
 html,
@@ -31,20 +34,39 @@ body,
 }
 
 body {
-  background-image: var(--bg-image);
+  /* ✅ Aplicamos el gradiente */
+  background-image: var(--bg-gradient);
   color: var(--text-primary);
-  transition: all 0.3s ease-in-out; 
+
+  /* ✅ ANIMACIÓN: Hacemos el fondo más grande y lo movemos */
+  background-size: 400% 400%;
+  animation: gradientMove 15s ease infinite; 
+
+  /* Transiciones y ajustes */
+  transition: all 0.5s ease-in-out; 
   background-repeat: no-repeat;
-  background-size: cover;
   background-attachment: fixed;
   min-height: 100vh;
-  background-position: center;
+  /* background-position se controla con la animación */
   box-sizing: border-box;
   overflow-x: hidden;
   overflow-y: scroll;
 }
 
-/* --- App layout --- */
+/* ✅ DEFINICIÓN DE LA ANIMACIÓN (Arriba <-> Abajo) */
+@keyframes gradientMove {
+  0% {
+    background-position: 50% 0%; /* Comienza arriba */
+  }
+  50% {
+    background-position: 50% 100%; /* Baja al fondo */
+  }
+  100% {
+    background-position: 50% 0%; /* Sube de nuevo */
+  }
+}
+
+/* --- App layout (Se mantiene igual) --- */
 .app {
   display: flex;
   flex-direction: column;
@@ -56,8 +78,6 @@ body {
   flex: 1;
   width: 100%;
 }
-
-
 
 /* --- Autofill estilo --- */
 input:-webkit-autofill,
