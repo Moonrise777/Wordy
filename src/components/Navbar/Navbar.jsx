@@ -1,4 +1,3 @@
-// src/components/Navbar/Navbar.jsx
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import Swal from 'sweetalert2';
@@ -6,11 +5,7 @@ import { logout } from '../../web_vitals/authService';
 import { onUserDataChanged } from '../../web_vitals/authService'; 
 import styles from './Navbar.module.scss';
 
-
-
 import IconWordy from '../../assets/Icon_Wordy.png';
-
-// Importa las imágenes 
 import Dog from '@profilepics/dog.png';
 import Hiyoko from '@profilepics/hiyoko.png';
 import Neko from '@profilepics/neko.png';
@@ -20,25 +15,39 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faBars, faTimes, faCaretDown, faCaretUp,
   faSignOutAlt, faSignInAlt, faLanguage,
-  faSun, faMoon, faQuestionCircle
+  faSun, faMoon, faQuestionCircle,
+  faLayerGroup
 } from '@fortawesome/free-solid-svg-icons';
 
-// Mapeo de nombres a imágenes
 const profilePics = { Dog, Hiyoko, Neko, Penguin };
 
-const Navbar = ({ isLoggedIn, user, language, setLanguage, isDark, toggleTheme }) => {
+// --- CONFIGURACIÓN DE CATEGORÍAS (SIN WORDLE) ---
+const CATEGORIES = [
+    { id: 'animals', label: { es: 'Animales', en: 'Animals' }, allowedInEs: true },
+    { id: 'countries', label: { es: 'Países', en: 'Countries' }, allowedInEs: true },
+    { id: 'sports', label: { es: 'Deportes', en: 'Sports' }, allowedInEs: true },
+    { id: 'brainrot', label: { es: 'Pájaros', en: 'Brainrot' }, allowedInEs: false },
+    { id: 'softwares', label: { es: 'Software', en: 'Software' }, allowedInEs: false }, // EN only
+];
+
+const Navbar = ({ isLoggedIn, user, language, setLanguage, isDark, toggleTheme, category, setCategory }) => {
   const [menuOpen, setMenuOpen] = useState(false);
   const [authMenuOpen, setAuthMenuOpen] = useState(false);
   const [languageMenuOpen, setLanguageMenuOpen] = useState(false);
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
+  const [categoryMenuOpen, setCategoryMenuOpen] = useState(false);
+  
   const [profilePic, setProfilePic] = useState(Neko);
   const [username, setUsername] = useState('User');
   const navigate = useNavigate();
 
-    // Carga de datos del usuario
+  const swalColors = {
+    background: isDark ? '#1f1f1f' : '#ffffff', 
+    color: isDark ? '#ffffff' : '#545454'       
+  };
+
   useEffect(() => {
     if (!user?.uid) {
-      // Resetea el nombre de usuario y la foto si no hay usuario
       setUsername('User');
       setProfilePic(Neko);
       return;
@@ -58,8 +67,6 @@ const Navbar = ({ isLoggedIn, user, language, setLanguage, isDark, toggleTheme }
     return () => unsubscribe();
   }, [user]);
 
-  
-  // Cerrar sesión
   const handleLogout = async () => {
     Swal.fire({
       title: language === 'es' ? '¿Estás seguro?' : 'Are you sure?',
@@ -70,6 +77,8 @@ const Navbar = ({ isLoggedIn, user, language, setLanguage, isDark, toggleTheme }
       cancelButtonColor: '#d33',
       confirmButtonText: language === 'es' ? 'Sí, cerrar sesión' : 'Yes, log out',
       cancelButtonText: language === 'es' ? 'Cancelar' : 'Cancel',
+      background: swalColors.background,
+      color: swalColors.color,
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
@@ -79,14 +88,18 @@ const Navbar = ({ isLoggedIn, user, language, setLanguage, isDark, toggleTheme }
             text: language === 'es' ? 'Has cerrado tu sesión correctamente.' : 'You have successfully logged out.',
             icon: 'success',
             timer: 2000,
-            showConfirmButton: false
+            showConfirmButton: false,
+            background: swalColors.background,
+            color: swalColors.color,
           });
           navigate('/auth');
         } catch (error) {
           Swal.fire({
             title: 'Error',
             text: (language === 'es' ? 'No se pudo cerrar la sesión: ' : 'Could not log out: ') + error.message,
-            icon: 'error'
+            icon: 'error',
+            background: swalColors.background,
+            color: swalColors.color,
           });
         }
       }
@@ -98,11 +111,24 @@ const Navbar = ({ isLoggedIn, user, language, setLanguage, isDark, toggleTheme }
     setAuthMenuOpen(false);
     setLanguageMenuOpen(false);
     setProfileMenuOpen(false);
+    setCategoryMenuOpen(false);
   };
 
+  // --- LÓGICA DE CAMBIO DE IDIOMA ---
   const handleLanguageChange = (lang) => {
-  setLanguage(lang);
-  closeAllMenus();
+    setLanguage(lang);
+    
+    // Si pasamos a español y la categoría actual no es válida (ej: software),
+    // forzamos el cambio a 'animals' (la nueva por defecto).
+    if (lang === 'es') {
+        const currentCatObj = CATEGORIES.find(c => c.id === category);
+        // Si no existe la categoría o no está permitida en español:
+        if (!currentCatObj || !currentCatObj.allowedInEs) {
+            if (setCategory) setCategory('animals'); 
+        }
+    }
+
+    closeAllMenus();
     Swal.fire({
       toast: true,
       position: 'top-end',
@@ -111,10 +137,40 @@ const Navbar = ({ isLoggedIn, user, language, setLanguage, isDark, toggleTheme }
       showConfirmButton: false,
       timer: 2000,
       timerProgressBar: true,
+      background: swalColors.background,
+      color: swalColors.color,
     });
   };
 
+  const handleCategoryChange = (catId) => {
+      if (setCategory) {
+          setCategory(catId);
+          closeAllMenus();
+          Swal.fire({
+            toast: true,
+            position: 'top',
+            icon: 'info',
+            title: language === 'es' ? 'Categoría actualizada' : 'Category updated',
+            showConfirmButton: false,
+            timer: 1500,
+            background: swalColors.background,
+            color: swalColors.color,
+          });
+      }
+  };
 
+  const openHelp = () => {
+      if (window.showWordyTutorial) {
+        window.showWordyTutorial(isDark);
+      }
+      closeAllMenus();
+  };
+
+  // Filtrado visual del menú
+  const visibleCategories = CATEGORIES.filter(cat => {
+      if (language === 'en') return true;
+      return cat.allowedInEs;
+  });
 
   return (
     <nav className={styles.navbar}>
@@ -136,26 +192,44 @@ const Navbar = ({ isLoggedIn, user, language, setLanguage, isDark, toggleTheme }
         <li>
           <button onClick={toggleTheme} className={styles.navItem}>
             <FontAwesomeIcon icon={isDark ? faSun : faMoon} style={{ marginRight: '8px' }} />
-
             {language === 'es' ? (isDark ? 'Claro' : 'Oscuro') : (isDark ? 'Light' : 'Dark')}
           </button>
         </li>
         
-        {/* Botón de ayuda */}
-        <li>
-          <button 
-            onClick={() => {
-              if (window.showWordyTutorial) {
-                window.showWordyTutorial();
-              }
-              closeAllMenus();
-            }} 
-            className={styles.navItem}
+        {/* --- Dropdown de Categorías --- */}
+        <li
+          className={styles.dropdown}
+          onMouseEnter={() => setCategoryMenuOpen(true)}
+          onMouseLeave={() => setCategoryMenuOpen(false)}
+        >
+          <div 
+            className={styles.dropdownToggle}
+            onClick={() => setCategoryMenuOpen(!categoryMenuOpen)}
           >
-            <FontAwesomeIcon icon={faQuestionCircle} style={{ marginRight: '8px' }} />
-            {language === 'es' ? 'Ayuda' : 'Help'}
-          </button>
+            <FontAwesomeIcon icon={faLayerGroup} className={styles.userIcon} style={{margin:0}} /> 
+            <FontAwesomeIcon icon={categoryMenuOpen ? faCaretUp : faCaretDown} style={{marginLeft: '6px'}} />
+          </div>
+
+          {categoryMenuOpen && (
+              <ul className={styles.dropdownMenu}>
+                {visibleCategories.map((cat) => (
+                    <li key={cat.id}>
+                        <button
+                            onClick={() => handleCategoryChange(cat.id)}
+                            className={styles.dropdownItem}
+                            style={{
+                                fontWeight: category === cat.id ? 'bold' : 'normal',
+                                color: category === cat.id ? '#6bb8ff' : 'inherit'
+                            }}
+                        >
+                            {language === 'es' ? cat.label.es : cat.label.en}
+                        </button>
+                    </li>
+                ))}
+            </ul>
+          )}
         </li>
+
 
         {/* Idioma */}
         <li
@@ -225,39 +299,45 @@ const Navbar = ({ isLoggedIn, user, language, setLanguage, isDark, toggleTheme }
               className={styles.dropdownToggle}
               onClick={() => setProfileMenuOpen(!profileMenuOpen)}
             >
-              <div style={{
-                backgroundColor: '#6bb8ff',
-                borderRadius: '50%',
-                padding: '4px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                width: '34px',
-                height: '34px',
-                marginRight: '8px'
-              }}>
+              <div className={styles.profileImageContainer}>
                 <img 
                   src={profilePic} 
                   alt="Profile"
                   style={{
-                    width: '30px',
-                    height: '30px',
-                    borderRadius: '50%'
+                    width: '100%',
+                    height: '100%',
+                    borderRadius: '50%',
+                    objectFit: 'cover'
                   }}
                 />
               </div>
-              {username}
-              <FontAwesomeIcon icon={profileMenuOpen ? faCaretUp : faCaretDown} />
+
+              <span style={{ 
+                whiteSpace: 'nowrap', 
+                overflow: 'hidden', 
+                textOverflow: 'ellipsis', 
+                maxWidth: '100px' 
+              }}>
+                {username}
+              </span>
+
+              <FontAwesomeIcon icon={profileMenuOpen ? faCaretUp : faCaretDown} style={{ marginLeft: '8px' }}/>
             </div>
 
             {profileMenuOpen && (
               <ul className={styles.dropdownMenu}>
-
                 <li><Link to="/profile" className={styles.dropdownItem} onClick={closeAllMenus}>{language === 'es' ? 'Mi Perfil' : 'My Profile'}</Link></li>
+                
+                <li>
+                  <button onClick={openHelp} className={styles.dropdownItem}>
+                    <FontAwesomeIcon icon={faQuestionCircle} style={{marginRight: '8px'}} />
+                    {language === 'es' ? 'Ayuda' : 'Help'}
+                  </button>
+                </li>
+
                 <li>
                   <button onClick={handleLogout} className={styles.dropdownItem}>
-                    <FontAwesomeIcon icon={faSignOutAlt} /> 
-                    
+                    <FontAwesomeIcon icon={faSignOutAlt} style={{marginRight: '8px'}} /> 
                     {language === 'es' ? 'Cerrar Sesión' : 'Logout'}
                   </button>
                 </li>
@@ -276,9 +356,17 @@ const Navbar = ({ isLoggedIn, user, language, setLanguage, isDark, toggleTheme }
             </div>
             {authMenuOpen && (
               <ul className={styles.dropdownMenu}>
+                
+                <li>
+                  <button onClick={openHelp} className={styles.dropdownItem}>
+                    <FontAwesomeIcon icon={faQuestionCircle} style={{marginRight: '8px'}} />
+                    {language === 'es' ? 'Ayuda' : 'Help'}
+                  </button>
+                </li>
+
                 <li>
                   <Link to="/auth" className={styles.dropdownItem} onClick={closeAllMenus}>
-                    <FontAwesomeIcon icon={faSignInAlt} /> 
+                    <FontAwesomeIcon icon={faSignInAlt} style={{marginRight: '8px'}} /> 
                     {language === 'es' ? 'Iniciar Sesión' : 'Login'}
                   </Link>
                 </li>

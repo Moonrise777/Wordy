@@ -5,7 +5,7 @@
   justify-content: space-between;
   align-items: center;
   padding: 0.8rem 2rem;
-  background-color: rgba(0, 0, 0, 0.5); /* Fondo translúcido */
+  background-color: rgba(0, 0, 0, 0.393); /* Fondo translúcido */
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   position: sticky;
@@ -84,17 +84,30 @@
   cursor: pointer;
   font-weight: 600;
   font-size: 1rem;
-  color: var(--text-secondary);
-  padding: 0.35rem 0.6rem;
+  color: #ffffff; /* Texto blanco puro para contraste */
+  padding: 0.4rem 1rem; /* Un poco más de espacio horizontal */
   border-radius: 50px;
-  background-color: #51a4c5bd; /* 💙 Fondo azul cielo */
-  transition: all 0.25s ease;
+  
+  background: linear-gradient(135deg, rgba(81, 164, 197, 0.3), rgba(81, 164, 197, 0.1));
+  border: 1px solid rgba(81, 164, 197, 0.4); /* Borde sutil del mismo tono */
+  box-shadow: 0 4px 15px rgba(81, 164, 197, 0.1); /* Brillo suave */
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  
+  transition: all 0.3s ease;
   min-width: 45px;
   max-height: 45px;
 
   &:hover {
-    background-color: #104e6a;
-    transform: scale(1.05);
+    background: linear-gradient(135deg, rgba(81, 164, 197, 0.5), rgba(81, 164, 197, 0.2));
+    border-color: rgba(81, 164, 197, 0.8);
+    box-shadow: 0 0 20px rgba(81, 164, 197, 0.4); /* Efecto de "Glow" o neón suave */
+    transform: translateY(-2px); /* Pequeña elevación */
+  }
+
+  &:active {
+    transform: translateY(0) scale(0.98);
+    box-shadow: 0 0 10px rgba(81, 164, 197, 0.3);
   }
 }
 
@@ -103,26 +116,43 @@
   margin-right: 6px;
 }
 
+.profileImageContainer {
+  /* AQUÍ SE CONFIGURA EL FONDO DE LA FOTO*/
+  background-color: #c1fbff; 
+  
+  border-radius: 50%;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  margin-right: 10px;
+  
+  /* ESTO ES LO QUE ARREGLA EL MÓVIL: */
+  flex-shrink: 0; /* Evita que se aplaste y pierda la forma redonda */
+}
+
+
 /* Si se usa una imagen de perfil */
 .profilePic {
   width: 38px;
   height: 38px;
   border-radius: 50%;
   object-fit: cover;
-  background-color: #eb87c6; /* azul cielo detrás */
-  box-shadow: 0 0 6px rgba(135, 206, 235, 0.6);
+  box-shadow: 0 0 6px rgba(232, 111, 232, 0.6);
   border: 2px solid white;
   transition: transform 0.2s ease, box-shadow 0.3s ease;
 
   &:hover {
     transform: scale(1.08);
-    box-shadow: 0 0 12px rgba(135, 206, 235, 0.8);
+    box-shadow: 0 0 12px rgba(220, 244, 254, 0.8);
   }
 }
 
 .dropdownMenu {
   position: absolute;
-  top: 110%;
+  top: 100%;
   right: 0;
   background-color: rgba(30, 30, 30, 0.85);
   backdrop-filter: blur(10px);

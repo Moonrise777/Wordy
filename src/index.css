@@ -5,19 +5,27 @@
 @tailwind components;
 @tailwind utilities;
 
-/* --- TEMA CLARO (Modo Día) --- */
+/* --- VARIABLES DE TEMA --- */
 :root {
-  /* Gradiente día */
-  --bg-gradient: linear-gradient(135deg, #f28ec1 0%, #f350d0 40%, #97faff 100%);
+  --bg-color-base: #fffcec; 
+  /* Colores Modo Claro */
+  --blob-color-1: #e9b2fb; /* Rosa */
+  --blob-color-2: #90f0f5; /* Cian */
+  --blob-center:  #fc5891; /* (Centro) */
+  
   --text-primary: #000000;
   --text-secondary: #d2d2d2;
   --bg-secondary: #ffffff; 
 }
 
-/* --- TEMA OSCURO (Modo Noche) --- */
+/* --- TEMA OSCURO --- */
 body.dark-theme {
-  /* Gradiente noche */
-  --bg-gradient: linear-gradient(135deg, #c85268 0%, #8B6868 40%, #339ea6 100%);
+  --bg-color-base: #2a2a2a;
+  /* Colores Modo Oscuro */
+  --blob-color-1: #be5467; /* Rojo oscuro */
+  --blob-color-2: #339ea6; /* Teal */
+  --blob-center:  #8B6868; /* Marrón rojizo (Centro) */
+  
   --text-primary: #ffffff;
   --text-secondary: #cccccc;
   --bg-secondary: #333333; 
@@ -33,45 +41,89 @@ body,
   font-family: 'Comfortaa', sans-serif;
 }
 
+/* --- CONFIGURACIÓN DEL BODY --- */
 body {
-  /* ✅ Aplicamos el gradiente */
-  background-image: var(--bg-gradient);
+  background-color: var(--bg-color-base);
   color: var(--text-primary);
-
-  /* ✅ ANIMACIÓN: Hacemos el fondo más grande y lo movemos */
-  background-size: 400% 400%;
-  animation: gradientMove 15s ease infinite; 
-
-  /* Transiciones y ajustes */
-  transition: all 0.5s ease-in-out; 
-  background-repeat: no-repeat;
-  background-attachment: fixed;
-  min-height: 100vh;
-  /* background-position se controla con la animación */
-  box-sizing: border-box;
+  
+  /* Scroll vertical activo, horizontal oculto */
   overflow-x: hidden;
-  overflow-y: scroll;
+  overflow-y: auto; 
+  
+  transition: background-color 0.8s ease-in-out, color 0.8s ease-in-out;
 }
 
-/* ✅ DEFINICIÓN DE LA ANIMACIÓN (Arriba <-> Abajo) */
-@keyframes gradientMove {
-  0% {
-    background-position: 50% 0%; /* Comienza arriba */
+/* --- ELEMENTOS DE FONDO (position: fixed para no mover el footer) --- */
+
+/* 1. Círculo Central*/
+body::before {
+  content: '';
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%); /* Centrado absoluto inicial */
+  
+  width: 50vh; /* Base un poco más pequeña para permitir mayor expansión */
+  height: 50vh;
+  border-radius: 50%;
+  
+  background: var(--blob-center);
+  filter: blur(80px); /* Difuminado suave */
+  opacity: 0.5;
+  z-index: -5; /* Al fondo */
+  
+  animation: deepBreathe 12s ease-in-out infinite;
+  pointer-events: none;
+}
+
+/* 2. Atmósfera de fondo (Color ambiental) */
+body::after {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: -6; /* Más atrás que el círculo central */
+  opacity: 0.5;
+  filter: blur(100px);
+  pointer-events: none;
+  
+  /* Gradiente con colores laterales */
+  background: radial-gradient(circle at 0% 0%, var(--blob-color-1), transparent 50%),
+              radial-gradient(circle at 100% 100%, var(--blob-color-2), transparent 50%);
+              
+  animation: backgroundShift 20s ease-in-out infinite alternate;
+}
+
+/* --- ANIMACIONES --- */
+@keyframes deepBreathe {
+  0%, 100% {
+    /* Estado inicial: Tamaño normal */
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 0.4;
   }
   50% {
-    background-position: 50% 100%; /* Baja al fondo */
-  }
-  100% {
-    background-position: 50% 0%; /* Sube de nuevo */
+    /* Estado expandido: Crece mucho (1.8x) pero lento */
+    transform: translate(-50%, -50%) scale(1.8); 
+    opacity: 0.65; /* Se hace un poco más intenso al crecer */
   }
 }
 
-/* --- App layout (Se mantiene igual) --- */
+/* Movimiento del fondo general */
+@keyframes backgroundShift {
+  0% { transform: scale(1); }
+  100% { transform: scale(1.9); }
+}
+
+/* --- APP LAYOUT --- */
 .app {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
   width: 100%;
+  position: relative; 
+  z-index: 1; /* Contenido por encima del fondo */
 }
 
 .main-content {
@@ -79,7 +131,7 @@ body {
   width: 100%;
 }
 
-/* --- Autofill estilo --- */
+/* --- UTILIDADES --- */
 input:-webkit-autofill,
 input:-webkit-autofill:hover,
 input:-webkit-autofill:focus,
@@ -88,7 +140,6 @@ input:-webkit-autofill:active {
   -webkit-text-fill-color: var(--text-secondary) !important;
 }
 
-/* --- Global --- */
 * {
   box-sizing: border-box;
   margin: 0;

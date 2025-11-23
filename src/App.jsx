@@ -17,6 +17,7 @@ export default function App() {
   const [loadingAuth, setLoadingAuth] = useState(true);
   const [language, setLanguage] = useState('es');
   const [isDark, setIsDark] = useState(false); 
+  const [category, setCategory] = useState('animals');
 
   // --- Lógica de Idioma ---
   useEffect(() => {
@@ -55,7 +56,7 @@ export default function App() {
     return () => { if (unsubscribeUserData) unsubscribeUserData(); };
   }, [user]);
 
-  // ✅ APLICA el tema a la página CADA VEZ que 'isDark' cambia
+  // APLICA el tema a la página CADA VEZ que 'isDark' cambia
   useEffect(() => {
     document.body.className = ''; // Limpia clases previas
     if (isDark) {
@@ -65,7 +66,7 @@ export default function App() {
     }
   }, [isDark]);
 
-  // ✅ La función para cambiar el tema 
+  // La función para cambiar el tema 
   const toggleTheme = async () => {
     const newDark = !isDark;
     setIsDark(newDark); // Actualiza la UI instantáneamente
@@ -80,15 +81,25 @@ export default function App() {
 
 
   // --- Componente tutorial ---
-    const showTutorial = useCallback(() => {
-      const tutorialText = language === 'es'
-        ? `
+  const showTutorial = useCallback((passedIsDark) => {
+    // Detectamos el tema:
+    // 1. Si viene por argumento (desde el botón del Navbar), usamos ese.
+    // 2. Si no (carga automática), usamos el estado 'isDark' actual.
+    const currentThemeIsDark = typeof passedIsDark === 'boolean' ? passedIsDark : isDark;
+
+    // Colores dinámicos
+    const bgColor = currentThemeIsDark ? '#1f1f1f' : '#ffffff'; // Fondo alerta
+    const textColor = currentThemeIsDark ? '#ffffff' : '#545454'; // Texto general
+    const titleColor = currentThemeIsDark ? '#ffffff' : '#000000'; // Título "Wordy" (importante para que no se pierda en fondo oscuro)
+
+    const tutorialText = language === 'es'
+      ? `
           <div style="text-align: left;">
             <div style="text-align: center; margin-bottom: 5px;">
                <img src="${iconWordy}" alt="Wordy" style="display: block; margin: auto; width: 100px; height: 100px;" />
             </div>
             <div style="text-align: center; margin-bottom: 20px;">
-              <h1 style="font-family: 'Bagel Fat One', cursive; font-size: 52px; color: #000; margin: 0; font-weight: normal; line-height: 1.2;">
+              <h1 style="font-family: 'Bagel Fat One', cursive; font-size: 52px; color: ${titleColor}; margin: 0; font-weight: normal; line-height: 1.2;">
                 Wordy
               </h1>
             </div>
@@ -103,21 +114,21 @@ export default function App() {
             </ul>
             <br>
             <div style="margin-left: 20px;">
-              <p>🟩 <strong style="color: green;">Verde:</strong> Letra correcta en posición correcta</p>
-              <p>🟨 <strong style="color: goldenrod;">Amarillo:</strong> Letra correcta en posición incorrecta</p>
-              <p>🟥 <strong style="color: crimson;">Rojo:</strong> Letra no está en la palabra</p>
+              <p>🟩 <strong style="color: #4ade80;">Verde:</strong> Letra correcta en posición correcta</p>
+              <p>🟨 <strong style="color: #facc15;">Amarillo:</strong> Letra correcta en posición incorrecta</p>
+              <p>🟥 <strong style="color: #f87171;">Rojo:</strong> Letra no está en la palabra</p>
             </div>
             <br>
             <p>💡 <strong>Consejo:</strong> Usa el teclado para escribir y BACKSPACE para borrar</p>
           </div>
         `
-        : `
+      : `
           <div style="text-align: left;">
             <div style="text-align: center; margin-bottom: 5px;">
                <img src="${iconWordy}" alt="Wordy" style="display: block; margin: auto; width: 100px; height: 100px;" />
             </div>
             <div style="text-align: center; margin-bottom: 20px;">
-              <h1 style="font-family: 'Bagel Fat One', cursive; font-size: 52px; color: #000; margin: 0; font-weight: normal; line-height: 1.2;">
+              <h1 style="font-family: 'Bagel Fat One', cursive; font-size: 52px; color: ${titleColor}; margin: 0; font-weight: normal; line-height: 1.2;">
                 Wordy
               </h1>
             </div>
@@ -132,39 +143,40 @@ export default function App() {
             </ul>
             <br>
             <div style="margin-left: 20px;">
-              <p>🟩 <strong style="color: green;">Green:</strong> Correct letter in correct position</p>
-              <p>🟨 <strong style="color: goldenrod;">Yellow:</strong> Correct letter in wrong position</p>
-              <p>🟥 <strong style="color: crimson;">Red:</strong> Letter not in the word</p>
+              <p>🟩 <strong style="color: #4ade80;">Green:</strong> Correct letter in correct position</p>
+              <p>🟨 <strong style="color: #facc15;">Yellow:</strong> Correct letter in wrong position</p>
+              <p>🟥 <strong style="color: #f87171;">Red:</strong> Letter not in the word</p>
             </div>
             <br>
             <p>💡 <strong>Tip:</strong> Use your keyboard to type and BACKSPACE to delete</p>
           </div>
         `;
-  
-      Swal.fire({
-        html: tutorialText,
-        confirmButtonText: language === 'es' ? '¡Entendido!' : 'Got it!',
-        confirmButtonColor: '#f9a8d4',
-        width: '600px',
-        allowOutsideClick: true,
-      });
-    }, [language]);
-  
-    useEffect(() => {
-      const hasSeenTutorial = localStorage.getItem('wordyTutorialSeen');
-      if (!hasSeenTutorial) {
-        showTutorial();
-        localStorage.setItem('wordyTutorialSeen', 'true');
-      }
-    }, [showTutorial]);
-  
-    useEffect(() => {
-      window.showWordyTutorial = showTutorial;
-      return () => {
-        delete window.showWordyTutorial;
-      };
-    }, [language, showTutorial]);
-  
+
+    Swal.fire({
+      html: tutorialText,
+      confirmButtonText: language === 'es' ? '¡Entendido!' : 'Got it!',
+      confirmButtonColor: '#f9a8d4',
+      width: '600px',
+      allowOutsideClick: true,
+      // Aplicamos los estilos dinámicos aquí
+      background: bgColor,
+      color: textColor,
+    });
+  }, [language, isDark]); // isDark es dependencia por si se llama sin argumentos
+
+  useEffect(() => {
+    const hasSeenTutorial = localStorage.getItem('wordyTutorialSeen');
+    if (!hasSeenTutorial) {
+      showTutorial();
+    }
+  }, [showTutorial]);
+
+  useEffect(() => {
+    window.showWordyTutorial = showTutorial;
+    return () => {
+      delete window.showWordyTutorial;
+    };
+  }, [language, showTutorial]);
 
 
 
@@ -181,11 +193,13 @@ export default function App() {
         setLanguage={setLanguage}
         isDark={isDark}
         toggleTheme={toggleTheme}
+        category={category}
+        setCategory={setCategory}
       />
       <Routes>
-        <Route path="/" element={<Main user={user} language={language} />} />
-        <Route path="/main" element={<Main user={user} language={language} />} />
-        <Route path="/Profile" element={<Profile user={user} language={language} />} />
+        <Route path="/" element={<Main user={user} language={language} category={category} />} />
+        <Route path="/main" element={<Main user={user} language={language} category={category} />} />
+        <Route path="/Profile" element={<Profile user={user} language={language} isDark={isDark} />} />
         <Route
           path="/auth"
           element={

@@ -3,7 +3,7 @@ import styles from './Footer.module.scss'; // Importa los estilos modulares
 
 const Footer = ({ language }) => {
   const currentYear = new Date().getFullYear();
-  const portfolioURL = 'https://github.com/Moonrise777/ArelyPortfolio.git';
+  const portfolioURL = 'https://moonrise777.github.io/ArelyPortfolio/';
 
   return (
     <footer className={styles.footer}>
