@@ -1,0 +1,169 @@
+/* Contenedor principal */
+.leaderboard-container {
+  min-height: 100vh;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Título */
+.leaderboard-title {
+  font-size: 2.25rem;
+  font-weight: 800;
+  margin-bottom: 2rem;
+  color: #f472b6; /* pink-400 */
+  filter: drop-shadow(0 4px 3px rgb(0 0 0 / 0.07));
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+/* Tarjeta principal (La tabla) */
+.leaderboard-card {
+  width: 100%;
+  max-width: 42rem; /* max-w-2xl */
+  border-radius: 1rem;
+  padding: 1.5rem;
+  box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  transition: background-color 0.3s ease;
+}
+
+/* Temas de la tarjeta */
+.card-dark {
+  background-color: rgba(0, 0, 0, 0.6);
+}
+
+.card-light {
+  background-color: rgba(255, 255, 255, 0.6);
+}
+
+/* Mensaje de vacío */
+.empty-message {
+  text-align: center;
+  padding: 1rem;
+  font-size: 1rem;
+}
+
+/* Lista */
+.leaderboard-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* Ítem individual de la lista (Fila de usuario) */
+.leaderboard-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem;
+  border-radius: 0.75rem;
+  transition: transform 0.2s ease, background-color 0.3s ease;
+  box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  border-bottom: 4px solid transparent; /* Por defecto transparente */
+}
+
+.leaderboard-item:hover {
+  transform: scale(1.02);
+}
+
+/* Temas del ítem */
+.item-dark {
+  background-color: rgba(31, 41, 55, 0.8); /* gray-800 */
+  color: white;
+}
+
+.item-light {
+  background-color: rgba(255, 255, 255, 0.8);
+  color: #1f2937; /* gray-800 */
+}
+
+/* Bordes de rango (Top 3) */
+.rank-1 { border-bottom-color: #facc15; } /* Amarillo */
+.rank-2 { border-bottom-color: #d1d5db; } /* Gris */
+.rank-3 { border-bottom-color: #fb923c; } /* Naranja */
+
+/* Sección izquierda (Rango, Foto, Nombre) */
+.player-info-left {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.rank-icon {
+  width: 2rem;
+  text-align: center;
+  display: flex;
+  justify-content: center;
+}
+
+.rank-text {
+  font-weight: 700;
+  font-size: 1.125rem;
+  color: #6b7280;
+}
+
+/* Foto de perfil */
+.profile-img {
+  width: 3rem;
+  height: 3rem;
+  border-radius: 9999px;
+  border: 2px solid #93c5fd; /* blue-300 */
+  object-fit: cover;
+  background-color: #dbeafe; /* blue-100 */
+}
+
+/* Nombre y etiqueta de líder */
+.player-details {
+  display: flex;
+  flex-direction: column;
+}
+
+.player-name {
+  font-weight: 700;
+  font-size: 1.125rem;
+}
+
+.leader-badge {
+  font-size: 0.75rem;
+  color: #eab308; /* yellow-500 */
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Sección derecha (Puntaje) */
+.player-score-right {
+  text-align: right;
+}
+
+.score-value {
+  display: block;
+  font-weight: 900;
+  font-size: 1.25rem;
+  color: #ec4899; /* pink-500 */
+}
+
+.score-label {
+  font-size: 0.75rem;
+  color: #6b7280; /* gray-500 */
+}
+
+/* Iconos de coronas/medallas */
+.icon-gold { color: #facc15; font-size: 1.5rem; }
+.icon-silver { color: #d1d5db; font-size: 1.5rem; }
+.icon-bronze { color: #fb923c; font-size: 1.5rem; }
+
+/* Cargando */
+.loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}

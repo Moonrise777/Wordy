@@ -6,6 +6,7 @@ import Footer from './components/Footer/Footer.jsx';
 import Main from './pages/Main/Main.jsx';
 import Profile from './pages/Profile/Profile.jsx';
 import NotFound from './pages/Error/NotFound.jsx';
+import Leaderboard from './pages/Leaderboard/Leaderboard.jsx';
 
 import { onAuthStateChanged, onUserDataChanged, saveProfile } from './web_vitals/authService';
 import Swal from 'sweetalert2';
@@ -18,8 +19,9 @@ export default function App() {
   const [language, setLanguage] = useState('es');
   const [isDark, setIsDark] = useState(false); 
   const [category, setCategory] = useState('animals');
+  const [isGameActive, setIsGameActive] = useState(false);
+  
 
-  // --- Lógica de Idioma ---
   useEffect(() => {
     const saved = localStorage.getItem('preferredLanguage');
     if (saved) setLanguage(saved);
@@ -27,9 +29,12 @@ export default function App() {
 
   useEffect(() => {
     localStorage.setItem('preferredLanguage', language);
-  }, [language]);
+    if (user && user.uid) {
+      saveProfile(user.uid, { language: language })
+        .catch(err => console.error(err));
+    }
+  }, [language, user]);
 
-  // --- Lógica de Autenticación ---
   useEffect(() => {
     const unsubscribe = onAuthStateChanged((currentUser) => {
       setIsLoggedIn(!!currentUser);
@@ -41,24 +46,26 @@ export default function App() {
     };
   }, []);
 
-  // --- Lógica del Tema (Carga) ---
   useEffect(() => {
     let unsubscribeUserData;
     if (user) {
       unsubscribeUserData = onUserDataChanged(user.uid, (userData) => {
         const themeIsDark = userData?.theme === 'dark';
-        setIsDark(themeIsDark); // Actualizamos el estado de React
+        setIsDark(themeIsDark); 
+
+        // Cargar Idioma desde la base de datos
+        if (userData?.language) {
+          setLanguage(userData.language);
+        }
       });
     } else {
-      // Si no hay usuario, resetea al tema claro
       setIsDark(false);
     }
     return () => { if (unsubscribeUserData) unsubscribeUserData(); };
   }, [user]);
 
-  // APLICA el tema a la página CADA VEZ que 'isDark' cambia
   useEffect(() => {
-    document.body.className = ''; // Limpia clases previas
+    document.body.className = ''; 
     if (isDark) {
       document.body.classList.add('dark-theme');
     } else {
@@ -66,11 +73,10 @@ export default function App() {
     }
   }, [isDark]);
 
-  // La función para cambiar el tema 
   const toggleTheme = async () => {
     const newDark = !isDark;
-    setIsDark(newDark); // Actualiza la UI instantáneamente
-    if (user) { // Guarda la preferencia si el usuario está logueado
+    setIsDark(newDark); 
+    if (user) { 
       try {
         await saveProfile(user.uid, { theme: newDark ? 'dark' : 'light' });
       } catch (error) {
@@ -80,17 +86,13 @@ export default function App() {
   };
 
 
-  // --- Componente tutorial ---
+  // Tutorial
   const showTutorial = useCallback((passedIsDark) => {
-    // Detectamos el tema:
-    // 1. Si viene por argumento (desde el botón del Navbar), usamos ese.
-    // 2. Si no (carga automática), usamos el estado 'isDark' actual.
     const currentThemeIsDark = typeof passedIsDark === 'boolean' ? passedIsDark : isDark;
 
-    // Colores dinámicos
-    const bgColor = currentThemeIsDark ? '#1f1f1f' : '#ffffff'; // Fondo alerta
-    const textColor = currentThemeIsDark ? '#ffffff' : '#545454'; // Texto general
-    const titleColor = currentThemeIsDark ? '#ffffff' : '#000000'; // Título "Wordy" (importante para que no se pierda en fondo oscuro)
+    const bgColor = currentThemeIsDark ? '#1f1f1f' : '#ffffff'; 
+    const textColor = currentThemeIsDark ? '#ffffff' : '#545454'; 
+    const titleColor = currentThemeIsDark ? '#ffffff' : '#000000'; 
 
     const tutorialText = language === 'es'
       ? `
@@ -158,11 +160,10 @@ export default function App() {
       confirmButtonColor: '#f9a8d4',
       width: '600px',
       allowOutsideClick: true,
-      // Aplicamos los estilos dinámicos aquí
       background: bgColor,
       color: textColor,
     });
-  }, [language, isDark]); // isDark es dependencia por si se llama sin argumentos
+  }, [language, isDark]);
 
   useEffect(() => {
     const hasSeenTutorial = localStorage.getItem('wordyTutorialSeen');
@@ -179,7 +180,7 @@ export default function App() {
   }, [language, showTutorial]);
 
 
-
+// Loading mientras se verifica el estado de autenticación
   if (loadingAuth) {
     return <div className="flex items-center justify-center h-screen">Cargando...</div>;
   }
@@ -195,11 +196,29 @@ export default function App() {
         toggleTheme={toggleTheme}
         category={category}
         setCategory={setCategory}
+        isGameActive={isGameActive}
+        setIsGameActive={setIsGameActive}
       />
       <Routes>
-        <Route path="/" element={<Main user={user} language={language} category={category} />} />
-        <Route path="/main" element={<Main user={user} language={language} category={category} />} />
+        <Route path="/" 
+        element={
+          <Main 
+          user={user} 
+          language={language} 
+          category={category} 
+          setIsGameActive={setIsGameActive} 
+          isLoggedIn={isLoggedIn} 
+          />} />
+        <Route path="/main" 
+        element={
+          <Main user={user} 
+          language={language} 
+          category={category} 
+          setIsGameActive={setIsGameActive}
+          isLoggedIn={isLoggedIn}
+          />} />
         <Route path="/Profile" element={<Profile user={user} language={language} isDark={isDark} />} />
+        <Route path="/leaderboard" element={<Leaderboard language={language} isDark={isDark} />} />
         <Route
           path="/auth"
           element={

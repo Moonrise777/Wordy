@@ -8,11 +8,23 @@ import {
 } from 'firebase/auth';
 
 import { auth, googleProvider, db } from './firebaseConfig';
-import { doc, getDoc, setDoc, updateDoc, onSnapshot } from "firebase/firestore";
 
-// ==========================
+import { 
+  doc, 
+  getDoc, 
+  setDoc, 
+  updateDoc, 
+  onSnapshot, 
+  increment,
+  collection,
+  query,      
+  where,      
+  orderBy,    
+  limit,      
+  getDocs     
+} from "firebase/firestore";
+
 // Helper
-// ==========================
 function ensureAuth() {
   if (!auth) {
     console.error('Firebase auth no está inicializado (auth is undefined). Revisa firebaseConfig.js');
@@ -21,15 +33,12 @@ function ensureAuth() {
   return true;
 }
 
-// ==========================
 // Autenticación
-// ==========================
 export const signInWithGoogle = async () => {
   if (!ensureAuth()) throw new Error('auth not initialized');
   try {
     const result = await signInWithPopup(auth, googleProvider);
-    console.log('Usuario autenticado con Google:', result.user);
-    return result.user;
+    return result;
   } catch (error) {
     console.error('Error al iniciar sesión con Google:', error);
     throw error;
@@ -40,8 +49,7 @@ export const signInWithEmail = async (email, password) => {
   if (!ensureAuth()) throw new Error('auth not initialized');
   try {
     const result = await signInWithEmailAndPassword(auth, email, password);
-    console.log('Usuario autenticado con correo:', result.user);
-    return result.user;
+    return result;
   } catch (error) {
     console.error('Error al iniciar sesión con correo:', error);
     throw error;
@@ -52,8 +60,7 @@ export const registerWithEmail = async (email, password) => {
   if (!ensureAuth()) throw new Error('auth not initialized');
   try {
     const result = await createUserWithEmailAndPassword(auth, email, password);
-    console.log('Usuario registrado:', result.user);
-    return result.user;
+    return result;
   } catch (error) {
     console.error('Error al registrar usuario:', error);
     throw error;
@@ -71,18 +78,13 @@ export const logout = async () => {
   }
 };
 
-// ==========================
 // Estado de autenticación
-// ==========================
 export const onAuthStateChanged = (callback) => {
   if (!ensureAuth()) return () => {};
   return firebaseOnAuthStateChanged(auth, callback);
 };
 
-// ==========================
 // Perfil de usuario (Firestore)
-// ==========================
-
 export const saveProfile = async (userId, data) => {
   const userRef = doc(db, "users", userId);
   const docSnap = await getDoc(userRef);
@@ -117,6 +119,52 @@ export const onUserDataChanged = (userId, callback) => {
   );
 
   return unsubscribe;
+};
+
+// Puntuación del usuario
+/**
+ * Suma puntos al puntaje total del usuario.
+ * @param {string} uid - ID del usuario.
+ * @param {number} points - Cantidad de puntos a sumar.
+ */
+export const updateUserScore = async (uid, points) => {
+  try {
+    const userRef = doc(db, 'users', uid);
+    
+    // Usamos 'increment' para sumar de forma atómica y segura
+    await updateDoc(userRef, {
+      score: increment(points)
+    });
+  } catch (error) {
+    console.error("Error al actualizar el puntaje:", error);
+  }
+};
+
+// Función para obtener el Leaderboard
+export const getLeaderboard = async () => {
+  try {
+    const usersRef = collection(db, "users");
+    
+    // Consulta: Puntuación mayor a 0, ordenado descendente, máximo 20 usuarios
+    const q = query(
+      usersRef, 
+      where("score", ">", 0), 
+      orderBy("score", "desc"), 
+      limit(20)
+    );
+
+    const querySnapshot = await getDocs(q);
+    
+    const leaders = [];
+    querySnapshot.forEach((doc) => {
+      leaders.push({ id: doc.id, ...doc.data() });
+    });
+
+    return leaders;
+  } catch (error) {
+    console.error("Error obteniendo leaderboard:", error);
+    return [];
+  }
 };
 
 export { auth };

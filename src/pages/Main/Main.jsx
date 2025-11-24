@@ -3,6 +3,7 @@ import Swal from "sweetalert2";
 import "./Main.css";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faDeleteLeft } from '@fortawesome/free-solid-svg-icons';
+import { updateUserScore } from '../../web_vitals/authService';
 
 const API_URL = "https://random-words-api.kushcreates.com/api";
 
@@ -24,8 +25,8 @@ const Keyboard = ({ layout, onKeyPress, keyColors }) => (
   </div>
 );
 
-// NOTA: Valor por defecto cambiado a "animals"
-const Main = ({ language, category = "animals" }) => {
+
+const Main = ({ language, category = "animals", setIsGameActive, isLoggedIn, user }) => {
   const [word, setWord] = useState("");
   const [loadingWord, setLoadingWord] = useState(true);
   const [grid, setGrid] = useState(Array(5).fill(Array(5).fill("")));
@@ -106,7 +107,7 @@ const Main = ({ language, category = "animals" }) => {
     fetchWord(language, category);
   }, [language, category, fetchWord]);
 
-  const handleSubmit = useCallback(() => {
+  const handleSubmit = useCallback(async() => {
     if (loadingWord || currentRow >= maxAttempts) return;
     const guessWord = grid[currentRow].join("");
 
@@ -159,10 +160,49 @@ const Main = ({ language, category = "animals" }) => {
 
     const isWin = guessWord === word;
     if (isWin || currentRow + 1 === maxAttempts) {
+      // Desactivamos la bandera
+      setIsGameActive(false);
+
+  let pointsEarned = 0;
+      
+      if (isWin) {
+        // currentRow es 0-based (0 es el primer intento)
+        // Fórmula: (5 - 0) * 100 = 500 puntos
+        pointsEarned = (maxAttempts - currentRow) * 100;
+
+        // Si el usuario está logueado, guardamos los puntos
+        if (isLoggedIn && user?.uid) {
+           await updateUserScore(user.uid, pointsEarned);
+        }
+      }
+      // --------------------------------
+
       setTimeout(() => {
+        // Preparamos el mensaje de victoria
+        let titleMsg = '';
+        let textMsg = '';
+
+        if (isWin) {
+            const winTitleEs = `¡Ganaste! (+${pointsEarned} puntos)`;
+            const winTitleEn = `You won! (+${pointsEarned} pts)`;
+            titleMsg = language === 'es' ? winTitleEs : winTitleEn;
+            
+            // Mensaje diferente si no está logueado
+            if (!isLoggedIn) {
+                textMsg = language === 'es' 
+                  ? `La palabra era ${word}. (Inicia sesión para guardar tus puntos)` 
+                  : `The word was ${word}. (Login to save your points)`;
+            } else {
+                textMsg = language === 'es' ? `La palabra era ${word}` : `The word was ${word}`;
+            }
+        } else {
+            titleMsg = language === 'es' ? "Perdiste" : "You lost";
+            textMsg = language === 'es' ? `La palabra era ${word}` : `The word was ${word}`;
+        }
+
         Swal.fire({
-          title: isWin ? (language === 'es' ? "¡Ganaste!" : "You won!") : (language === 'es' ? "Perdiste" : "You lost"),
-          text: language === 'es' ? `La palabra era ${word}` : `The word was ${word}`,
+          title: titleMsg,
+          text: textMsg,
           icon: isWin ? "success" : "error",
           allowOutsideClick: false,
           allowEscapeKey: false,
@@ -177,10 +217,16 @@ const Main = ({ language, category = "animals" }) => {
       return;
     }
     setCurrentRow((r) => r + 1);
-  }, [currentRow, grid, language, category, word, loadingWord, maxAttempts, fetchWord]);
+  }, [currentRow, grid, language, category, word, loadingWord, maxAttempts, fetchWord, setIsGameActive, isLoggedIn, user]); // <--- Agrega 'user' e 'isLoggedIn' a dependencias
 
   const handleKeyPress = useCallback((key) => {
     if (currentRow >= maxAttempts || loadingWord) return;
+
+    // --- Si escribe una letra, activamos el juego ---
+    if (/^[A-ZÑ]$/.test(key)) {
+       setIsGameActive(true);
+    }
+
     if (key === 'ENTER') {
       handleSubmit();
     } else if (key === 'BACKSPACE') {
@@ -204,7 +250,7 @@ const Main = ({ language, category = "animals" }) => {
         return newGrid;
       });
     }
-  }, [currentRow, maxAttempts, loadingWord, handleSubmit]);
+  }, [currentRow, maxAttempts, loadingWord, handleSubmit, setIsGameActive]);
 
   useEffect(() => {
     const handlePhysicalKeyboard = (e) => {
@@ -218,6 +264,23 @@ const Main = ({ language, category = "animals" }) => {
     return () => window.removeEventListener('keydown', handlePhysicalKeyboard);
   }, [handleKeyPress]);
   
+
+  // Protección cerrar pestaña y F5
+  useEffect(() => {
+    const handleBeforeUnload = (e) => {
+      // SOLO si está logueado Y el juego ha comenzado (hay algo escrito)
+      if (isLoggedIn && (currentRow > 0 || grid[0][0] !== "")) { 
+        e.preventDefault();
+        e.returnValue = ''; 
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [grid, currentRow, isLoggedIn]);
+
+
+
   return (
     <div className="wordle-container">
       {loadingWord ? (
